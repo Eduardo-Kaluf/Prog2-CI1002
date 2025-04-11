@@ -45,7 +45,7 @@ for i in range(len(test_list)):
 	p = subprocess.run(['./main'], stdout=subprocess.PIPE, input=test_list[i](INIT))
 	print("\n========================== TESTE", i+1, "==========================\n")
 	if not p.returncode:
-		print(p.stdout.decode('utf-8'))
+		print(p.stdout.decode('utf-8', errors='replace'))
 	else:
 		print("ERRO NO TESTE #" + str(i+1))
 	print ("=============================================================\n\n")
