@@ -18,4 +18,6 @@ struct dir_member_t *create_dir_member(char *member_name, int compressed_size, i
 
 void log_member(struct dir_member_t *dir_member);
 
+void edit_dir_member(struct dir_member_t *dir_member, int compressed_size, int offset, int pos);
+
 #endif

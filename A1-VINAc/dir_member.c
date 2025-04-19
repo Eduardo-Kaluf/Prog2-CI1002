@@ -2,9 +2,7 @@
 #include "dir_member.h"
 
 #include <stdlib.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -29,6 +27,26 @@ struct dir_member_t *create_dir_member(char *member_name, int compressed_size, i
 
     return dir_member;
 }
+
+void edit_dir_member(struct dir_member_t *dir_member, int compressed_size, int offset, int pos) {
+    struct stat buf;
+
+    stat(dir_member->name, &buf);
+
+    dir_member->original_size = buf.st_size;
+
+    if (compressed_size == -1)
+        dir_member->stored_size = dir_member->original_size;
+    else
+        dir_member->stored_size = compressed_size;
+
+    dir_member->uid = buf.st_uid;
+    dir_member->last_modification = buf.st_mtime;
+    dir_member->order = pos;
+    dir_member->offset = offset;
+
+}
+
 
 void log_member(struct dir_member_t *dir_member) {
     printf("Nome: %s, Id: %d, Tamanho Original: %d, Tamanho guardado: %d, Última modificação: %li, Offset: %d, Posição: %u",

@@ -2,9 +2,14 @@
 #include "dir_member.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include "archiver.h"
+#include "content.h"
+#include "utils.h"
 
 
 void read_dir_members(FILE *archiver, struct dir_member_t ***dir_members, int *dir_member_num) {
@@ -24,8 +29,81 @@ void read_dir_members(FILE *archiver, struct dir_member_t ***dir_members, int *d
 }
 
 
-void fix_offsets(struct dir_member_t **dir_members, int n, int offset_fix) {
+void fix_offsets(struct dir_member_t **dir_members, int n, int offset_fix, int order_start, int order_end) {
+//melhorar esse loop
     for (int i = 0; i < n; i++) {
-        dir_members[i]->offset = dir_members[i]->offset + offset_fix;
+        if (i >= order_start && i < order_end) {
+            dir_members[i]->offset = dir_members[i]->offset + offset_fix;
+        }
     }
+}
+
+void fix_order(struct dir_member_t **dir_members, int n, int order_start, int order_end, int order_increment) {
+    //melhorar esse loop
+    for (int i = 0; i < n; i++) {
+        if (i >= order_start && i < order_end) {
+            dir_members[i]->order = dir_members[i]->order + order_increment;
+        }
+    }
+}
+
+
+struct dir_member_t *find_by_name(struct dir_member_t **dir_members, char *target, int dir_size) {
+    for (int i = 0; i < dir_size; i++) {
+        if (strcmp(dir_members[i]->name, target) == 0)
+            return dir_members[i];
+    }
+
+    return NULL;
+}
+
+void remove_by_name(struct dir_member_t ***dir_members, char *target, int *dir_size) {
+    for (int i = 0; i < *dir_size; i++) {
+        if (strcmp((*dir_members)[i]->name, target) == 0) {
+            free((*dir_members)[i]);
+
+            // TALVEZ LEAK?
+            for (int j = i; j < *dir_size - 1; j++) {
+                (*dir_members)[j] = (*dir_members)[j + 1];
+                (*dir_members)[j]->order -= 1;
+            }
+
+            (*dir_size)--;
+
+            struct dir_member_t **tmp = realloc(*dir_members, (*dir_size) * sizeof(struct dir_member_t *));
+            if (tmp != NULL || *dir_size == 0) {
+                *dir_members = tmp;
+            }
+
+            return;
+        }
+    }
+}
+
+void order_dir_members(struct dir_member_t **v, int append_size) {
+    for (int i = 1; i < append_size; ++i) {
+        struct dir_member_t *key = v[i];
+        int j = i - 1;
+
+        while (j >= 0 && v[j]->order > key->order) {
+            v[j + 1] = v[j];
+            j = j - 1;
+        }
+        v[j + 1] = key;
+    }
+}
+
+void write_directory(FILE *archiver, struct dir_member_t **dir_members, int total_size, int append_size) {
+    rewind(archiver);
+
+    order_dir_members(dir_members, total_size);
+
+    if (append_size) {
+        move_chunks(archiver, dir_members[0]->offset, file_size(archiver), dir_members[0]->offset + (append_size * DIR_MEMBER_SIZE));
+        fix_offsets(dir_members, total_size, append_size * DIR_MEMBER_SIZE, 0, total_size);
+    }
+
+    rewind(archiver);
+    for (int i = 0; i < total_size; i++)
+        fwrite(dir_members[i], DIR_MEMBER_SIZE , 1, archiver);
 }

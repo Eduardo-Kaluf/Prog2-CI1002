@@ -7,17 +7,21 @@ int main(int argc, char **argv) {
         argv[i] = argv[i + 1];
     }
 
-    // FILE *archiver = fopen("teste.vc", "r+b");
-    //
-    // option_ip(archiver, argv, argc - 1);
-
-    // archiver = fopen("teste.vc", "r+b");
-    //
+    FILE *archiver = fopen("teste.vc", "r+b");
+    option_ip(archiver, argv, argc - 1);
     // option_c(archiver);
     //
-    FILE *archiver = fopen("teste.vc", "r+b");
+    // //option_x(archiver, NULL, 0);
+    //
+    // option_m(archiver, "teste3.txt", "teste1.txt");
+    // option_c(archiver);
+    //
+    // // option_c(archiver);
+    // char *files_to_remove[] = { "teste3.txt", "teste4.txt" };
+    // option_r(archiver, files_to_remove, 2);
+    // option_c(archiver);
 
-    option_x(archiver);
+    fclose(archiver);
 
     return 0;
 }

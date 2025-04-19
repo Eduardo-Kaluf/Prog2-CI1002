@@ -1,23 +1,20 @@
+#define _GNU_SOURCE 1
+
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <unistd.h>
 #include "dir_member.h"
 #include "directory.h"
 #include "archiver.h"
+#include "utils.h"
+#include "content.h"
 
-#define DIR_MEMBER_SIZE sizeof(struct dir_member_t)
-
-long is_empty(FILE *archiver) {
-    fseek(archiver, 0, SEEK_END);
-    long size = ftell(archiver); 
-    rewind(archiver);
-    return size == 0;
-}
 
 void option_ip(FILE *archiver, char **new_members, int append_size) {
     struct dir_member_t **dir_members = NULL;
     int dir_size = 0;
     int total_size = append_size;
+    int append_minus = 0;
 
     // Caso o archive não seja vazio, le os membros do diretório
     if (!is_empty(archiver)) {
@@ -30,39 +27,47 @@ void option_ip(FILE *archiver, char **new_members, int append_size) {
 
     // Adiciona o conteúdo dos novos membros ao arquiva e atualiza o vetor do diretório
     for (int i = 0; i < append_size; i++) {
-        fseek(archiver, 0, SEEK_END);
-        long offset = ftell(archiver);
+        long archiver_size = file_size(archiver);
 
         FILE *new_member = fopen(new_members[i], "rb");
 
-        fseek(new_member, 0, SEEK_END);
-        long member_size = ftell(new_member);
-        char *member_content = malloc(member_size);
+        long member_size = file_size(new_member);
 
-        fseek(new_member, 0, SEEK_SET);
-        fread(member_content, 1, member_size, new_member);
+        struct dir_member_t *found = find_by_name(dir_members, new_members[i], dir_size);
 
-        fwrite(member_content, 1, member_size, archiver);
+        if (found != NULL) {
+            move_chunks(archiver, found->offset + found->stored_size, archiver_size, found->offset + member_size);
+            if (member_size < found->stored_size) {
+                ftruncate(fileno(archiver), archiver_size - (found->stored_size - member_size));
+            }
 
-        dir_members[dir_size + i] = create_dir_member(new_members[i], -1, offset, dir_size + i);
+            // fix_offsets(dir_members, dir_size, -(found->stored_size - member_size), found->order + 1, dir_size);
+
+            for (int j = 0; j < dir_size; j++) {
+                if (dir_members[j]->order > found->order) {
+                    dir_members[j]->offset = dir_members[j]->offset - (found->stored_size - member_size);
+                }
+            }
+
+            edit_dir_member(found, -1, found->offset, found->order);
+
+            read_write(new_member, archiver, member_size, found->offset);
+
+            append_minus += 1;
+        }
+        else {
+            read_write(new_member, archiver, member_size, archiver_size);
+            dir_members[dir_size + i - append_minus] = create_dir_member(new_members[i], -1, archiver_size, dir_size + i - append_minus);
+        }
 
         fclose(new_member);
-        free(member_content);
     }
 
+    append_size -= append_minus;
+    total_size -= append_minus;
+
     // Atualiza o diretório do archive
-    fseek(archiver, 0, SEEK_SET);
-
-    order_dir_members(dir_members, total_size);
-
-    create_gap(archiver, dir_members[0]->offset, append_size * DIR_MEMBER_SIZE );
-
-    fix_offsets(dir_members, total_size, append_size * DIR_MEMBER_SIZE );
-
-    for (int i = 0; i < total_size; i++)
-        fwrite(dir_members[i], DIR_MEMBER_SIZE , 1, archiver);
-
-    fclose(archiver);
+    write_directory(archiver, dir_members, total_size, append_size);
 }
 
 void option_c(FILE *archiver) {
@@ -75,9 +80,9 @@ void option_c(FILE *archiver) {
 
     for (int i = 0; i < dir_size; i++)
         log_member(dir_members[i]);
-}
 
-void option_x(FILE *archiver) {
+}
+void option_x(FILE *archiver, char **members_to_extract, int extraction_size) {
     struct dir_member_t **dir_members = NULL;
     int dir_size = 0;
 
@@ -85,97 +90,185 @@ void option_x(FILE *archiver) {
     if (!is_empty(archiver))
         read_dir_members(archiver, &dir_members, &dir_size);
 
-    const long buffer_size = 1024;
-    char buffer[buffer_size];
+    char buffer[BUFFER_SIZE];
     fseek(archiver, 0, SEEK_END);
     long size = ftell(archiver);
     int bytes_to_read;
 
-    for (int i = 0; i < dir_size; i++) {
-        FILE * file_test = fopen(dir_members[i]->name, "w");
+    if (extraction_size == 0) {
+        for (int i = 0; i < dir_size; i++) {
+            FILE *out_file = fopen(dir_members[i]->name, "w");
 
-        if (i != dir_size - 1)
-            bytes_to_read = dir_members[i + 1]->offset - dir_members[i]->offset;
-        else
-            bytes_to_read = size - dir_members[i]->offset;
+            if (i != dir_size - 1)
+                bytes_to_read = dir_members[i + 1]->offset - dir_members[i]->offset;
+            else
+                bytes_to_read = size - dir_members[i]->offset;
 
-        fseek(archiver, dir_members[i]->offset, SEEK_SET);
+            fseek(archiver, dir_members[i]->offset, SEEK_SET);
 
-        fread(buffer, 1, bytes_to_read, archiver);
+            fread(buffer, 1, bytes_to_read, archiver);
 
-        fwrite(buffer, 1, bytes_to_read, file_test);
-    }
-}
-
-
-
-void order_dir_members(struct dir_member_t **v, int append_size) {
-    for (int i = 1; i < append_size; ++i) {
-        struct dir_member_t *key = v[i];
-        int j = i - 1;
-
-        while (j >= 0 && v[j]->order > key->order) {
-            v[j + 1] = v[j];
-            j = j - 1;
+            fwrite(buffer, 1, bytes_to_read, out_file);
         }
-        v[j + 1] = key;
     }
+    else {
+        for (int i = 0; i < extraction_size; i++) {
+            struct dir_member_t *extracting = find_by_name(dir_members, members_to_extract[i], dir_size);
+            FILE *out_file = fopen(extracting->name, "w");
+
+            bytes_to_read = extracting->stored_size;
+
+            fseek(archiver, extracting->offset, SEEK_SET);
+            fread(buffer, 1, bytes_to_read, archiver);
+
+            fwrite(buffer, 1, bytes_to_read, out_file);
+        }
+    }
+
 }
 
-// void move_to_end(FILE *archiver, int start, int finish, int new_offset) {
-//     fseek(archiver, 0, finish);
-//     long filesize = ftell(archiver);
+void option_m(FILE *archiver, char *member_to_move, char *target) {
+    struct dir_member_t **dir_members = NULL;
+    int dir_size = 0;
 
-//     // SE PRECISAR TROCAR PELO TAMANHO DO MAIOR BUFFER
-//     const int buffer_size = 1024;
-//     char buffer[buffer_size];
-
-//     int chunk = 0;
-
-//     for (long i = start; i < finish;) {
-//         if (start + buffer_size < finish)
-//             chunk += buffer_size;
-//         else
-//             chunk += finish - i;
-
-//         fseek(archiver, i, SEEK_SET);
-//         fread(buffer, 1, chunk, archiver);
-        
-//         fseek(archiver, 0, SEEK_END);
-//         fwrite(buffer, 1, chunk, archiver);
-
-
-//         i += buffer_size;
-//     }
-
-//     fflush(archiver);
-//     fclose(archiver);
-
-// }
-
-void create_gap(FILE *archiver, long pos, long shift_len) {
     fseek(archiver, 0, SEEK_END);
-    long filesize = ftell(archiver);
+    long size = ftell(archiver);
+    fseek(archiver, 0, SEEK_SET);
 
-    const long buffer_size = 1024;
-    char buffer[buffer_size];
+    // Caso o archive não seja vazio, le os membros do diretório
+    if (!is_empty(archiver))
+        read_dir_members(archiver, &dir_members, &dir_size);
 
-    for (long i = filesize; i > pos; ) {
-        long chunk_start = i - buffer_size;
+    struct dir_member_t *dir_target = find_by_name(dir_members, target, dir_size);
+    struct dir_member_t *dir_member_to_move = find_by_name(dir_members, member_to_move, dir_size);
 
-        if (chunk_start < pos)
-            chunk_start = pos;
+    if (dir_member_to_move->order < dir_target->order) {
+        move_chunks(archiver, dir_target->offset + dir_target->stored_size, size, dir_target->offset + dir_target->stored_size + dir_member_to_move->stored_size);
+        move_member(archiver, dir_member_to_move, dir_target->offset + dir_target->stored_size);
+        fseek(archiver, 0, SEEK_END);
+        long new_size = ftell(archiver);
+        fseek(archiver, 0, SEEK_SET);
+        move_chunks(archiver, dir_member_to_move->offset + dir_member_to_move->stored_size, new_size, dir_member_to_move->offset);
 
-        long bytes_to_read = i - chunk_start;
+        fix_order(dir_members, dir_size, dir_member_to_move->order + 1, dir_target->order + 1, -1);
+        fix_offsets(dir_members, dir_size, -dir_member_to_move->stored_size,dir_member_to_move->order + 1, dir_target->order + 1);
 
-        fseek(archiver, chunk_start, SEEK_SET);
-        fread(buffer, 1, bytes_to_read, archiver);
+        dir_member_to_move->offset = dir_target->offset + dir_target->stored_size;
+        dir_member_to_move->order = dir_target->order + 1;
 
-        fseek(archiver, chunk_start + shift_len, SEEK_SET);
-        fwrite(buffer, 1, bytes_to_read, archiver);
+        ftruncate(fileno(archiver), size);
 
-        i -= bytes_to_read;
+        order_dir_members(dir_members, dir_size);
+        fseek(archiver, 0, SEEK_SET);
+
+        for (int i = 0; i < dir_size; i++)
+            fwrite(dir_members[i], DIR_MEMBER_SIZE , 1, archiver);
+
+    } else {
+
+
+        fix_order(dir_members, dir_size, dir_target->order + 1, dir_member_to_move->order, 1);
+        fix_offsets(dir_members, dir_size, dir_member_to_move->stored_size,dir_target->order + 1, dir_member_to_move->order);
+
+        move_chunks(archiver, dir_target->offset + dir_target->stored_size, dir_member_to_move->offset, size);
+
+        move_member(archiver, dir_member_to_move, dir_target->offset + dir_target->stored_size);
+
+        fseek(archiver, 0, SEEK_END);
+        long new_size = ftell(archiver);
+        fseek(archiver, 0, SEEK_SET);
+
+        move_chunks(archiver, size, new_size, dir_target->offset + dir_target->stored_size + dir_member_to_move->stored_size);
+
+        ftruncate(fileno(archiver), new_size - (dir_member_to_move->offset - (dir_target->offset + dir_target->stored_size)));
+
+        dir_member_to_move->offset = dir_target->offset + dir_target->stored_size;
+        dir_member_to_move->order = dir_target->order + 1;
+
+        order_dir_members(dir_members, dir_size);
+        fseek(archiver, 0, SEEK_SET);
+
+        for (int i = 0; i < dir_size; i++)
+            fwrite(dir_members[i], DIR_MEMBER_SIZE , 1, archiver);
+
+        }
     }
+
+
+void option_r(FILE *archiver, char **removing_members, int removing_size) {
+    struct dir_member_t **dir_members = NULL;
+    int dir_size = 0;
 
     fseek(archiver, 0, SEEK_SET);
+
+    // Caso o archive não seja vazio, le os membros do diretório
+    if (!is_empty(archiver))
+        read_dir_members(archiver, &dir_members, &dir_size);
+
+    for (int i = 0; i < removing_size; i++) {
+        fseek(archiver, 0, SEEK_END);
+        long arc_size = ftell(archiver);
+        fseek(archiver, 0, SEEK_SET);
+
+        struct dir_member_t *current_removing_member = find_by_name(dir_members, removing_members[i], dir_size);
+
+        move_chunks(archiver, current_removing_member->offset + current_removing_member->stored_size, arc_size, current_removing_member->offset);
+
+        fix_offsets(dir_members, dir_size, -current_removing_member->stored_size, current_removing_member->order + 1, dir_size);
+
+        remove_by_name(&dir_members, current_removing_member->name, &dir_size);
+
+        ftruncate(fileno(archiver), arc_size - current_removing_member->stored_size);
+    }
+
+    if (dir_size == 0) {
+        ftruncate(fileno(archiver), 0);
+        return;
+    }
+
+
+    fseek(archiver, 0, SEEK_SET);
+    order_dir_members(dir_members, dir_size);
+
+    fseek(archiver, 0, SEEK_END);
+    long size = ftell(archiver);
+    fseek(archiver, 0, SEEK_SET);
+    move_chunks(archiver, dir_members[0]->offset, size, dir_members[0]->offset - (removing_size * DIR_MEMBER_SIZE));
+
+    fix_offsets(dir_members, dir_size, -(removing_size * DIR_MEMBER_SIZE), 0, dir_size);
+
+
+    fseek(archiver, 0, SEEK_SET);
+    for (int i = 0; i < dir_size; i++)
+        fwrite(dir_members[i], DIR_MEMBER_SIZE , 1, archiver);
+
+}
+
+long is_empty(FILE *archiver) {
+    fseek(archiver, 0, SEEK_END);
+    long size = ftell(archiver);
+    rewind(archiver);
+    return size == 0;
+}
+
+long file_size(FILE *file) {
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    return size;
+}
+
+void read_write(FILE *read_file, FILE *write_file, int member_size, int write_offset) {
+
+    char *member_content = malloc(member_size * sizeof(char));
+
+    fseek(read_file, 0, SEEK_SET);
+    fread(member_content, 1, member_size, read_file);
+
+    fseek(write_file, write_offset, SEEK_SET);
+    fwrite(member_content, 1, member_size, write_file);
+
+    rewind(read_file);
+    rewind(write_file);
+    free(member_content);
 }
