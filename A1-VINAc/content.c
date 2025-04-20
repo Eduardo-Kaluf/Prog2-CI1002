@@ -21,6 +21,8 @@ void move_member(FILE *archiver, struct dir_member_t *member_to_move, int offset
     fseek(archiver, 0, SEEK_SET);
 }
 
+
+// ESSA FUNÇÃO DEVE FAZER FTRUNCATE TAMBEM
 void move_chunks(FILE *archiver, int start, int finish, int write_position) {
     char buffer[BUFFER_SIZE];
 

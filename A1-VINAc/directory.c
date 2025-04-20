@@ -1,3 +1,4 @@
+#include "utils.h"
 
 #include "dir_member.h"
 
@@ -98,9 +99,12 @@ void write_directory(FILE *archiver, struct dir_member_t **dir_members, int tota
 
     order_dir_members(dir_members, total_size);
 
-    if (append_size) {
+    if (append_size != 0) {
         move_chunks(archiver, dir_members[0]->offset, file_size(archiver), dir_members[0]->offset + (append_size * DIR_MEMBER_SIZE));
         fix_offsets(dir_members, total_size, append_size * DIR_MEMBER_SIZE, 0, total_size);
+        // TODO TODO TODO VERIFY
+        if (append_size < 0)
+             ftruncate(fileno(archiver), file_size(archiver)) + (append_size * DIR_MEMBER_SIZE);
     }
 
     rewind(archiver);

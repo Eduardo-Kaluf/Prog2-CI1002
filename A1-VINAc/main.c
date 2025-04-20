@@ -8,12 +8,12 @@ int main(int argc, char **argv) {
     }
 
     FILE *archiver = fopen("teste.vc", "r+b");
-    option_ip(archiver, argv, argc - 1);
+    // option_ip(archiver, argv, argc - 1);
     // option_c(archiver);
-    //
-    // //option_x(archiver, NULL, 0);
-    //
-    // option_m(archiver, "teste3.txt", "teste1.txt");
+    char *files_to_extract[] = { "teste3.txt", "teste4.txt" };
+    option_x(archiver, files_to_extract, 2);
+
+    option_m(archiver, "teste3.txt", "teste1.txt");
     // option_c(archiver);
     //
     // // option_c(archiver);
