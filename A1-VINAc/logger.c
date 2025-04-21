@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "files.h"
 #include "utils.h"
-
+#include "logger.h"
+#include "dir_member.h"
 
 void log_error(int error, char *member_name) {
     switch (error) {
@@ -43,4 +45,18 @@ void log_error(int error, char *member_name) {
             printf("Erro desconhecido\n");
             break;
     }
+}
+
+void log_content(FILE *archiver) {
+    struct dir_member_t first_member;
+    int ch;
+
+    if (is_empty(archiver))
+        return;
+
+    fread(&first_member, sizeof(struct dir_member_t), 1, archiver);
+
+    fseek(archiver, first_member.offset, SEEK_SET);
+    while ((ch = fgetc(archiver)) != EOF)
+        putchar(ch);
 }

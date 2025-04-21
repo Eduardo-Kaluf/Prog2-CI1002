@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CLionExternalBuildManager">
+    <target id="9a18fa69-94e8-40ff-b7b6-9d32712f846e" name="homolog" defaultType="MAKE">
+      <configuration id="146cebcb-1907-4a69-99f5-df6bb9e4bc00" name="homolog">
+        <build type="MAKE">
+          <make targetName="homolog" />
+        </build>
+        <clean type="MAKE">
+          <make targetName="clean" />
+        </clean>
+      </configuration>
+    </target>
+  </component>
+</project>

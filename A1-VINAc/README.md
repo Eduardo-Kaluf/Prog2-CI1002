@@ -45,11 +45,4 @@ makefile:
 
 Todos esses exceto a main possuem arquivos headers definindo as estruturas, funções, constantes e enumerações utilizadas.
 
-# Planejamento:
-
-O arquivador VINAc será implementado possuindo 2 Tipos Abstratos de Dados e outras funções auxiliares:
-
-Diretório
-Membros
-Utils
-Logger
+# Algoritmos e Planejamento:

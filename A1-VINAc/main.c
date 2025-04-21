@@ -1,5 +1,9 @@
 #define _GNU_SOURCE 1
 
+#ifndef HOMOLOG
+    #define PROD
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -8,7 +12,7 @@
 
 #include "utils.h"
 #include "archiver.h"
-#include "logger.h"
+#include "files.h"
 
 
 int main(int argc, char **argv) {
@@ -42,7 +46,7 @@ int main(int argc, char **argv) {
 
             backup = create_backup(archiver, &backup_name);
 
-            error_code = option_ip(archiver, argv, argc, UNCOMPRESSED);
+            error_code = option_i(archiver, argv, argc, UNCOMPRESSED);
 
             if (error_code != OK)
                 restore_backup(archiver, backup, backup_name);
@@ -54,7 +58,7 @@ int main(int argc, char **argv) {
 
             backup = create_backup(archiver, &backup_name);
 
-            error_code = option_ip(archiver, argv, argc, COMPRESS);
+            error_code = option_i(archiver, argv, argc, COMPRESS);
 
             if (error_code != OK)
                 restore_backup(archiver, backup, backup_name);
@@ -89,6 +93,11 @@ int main(int argc, char **argv) {
             error_code = OPTION_DOES_NOT_EXIST;
             break;
     }
+
+    #if HOMOLOG
+        option_c(archiver);
+        log_content(archiver);
+    #endif
 
     graceful_shutdown(archiver, error_code);
 }

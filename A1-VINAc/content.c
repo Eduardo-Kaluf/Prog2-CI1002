@@ -1,5 +1,7 @@
-#include <stdio.h>
+#define _GNU_SOURCE 1
 
+#include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 
 #include "dir_member.h"
@@ -58,8 +60,7 @@ void move_and_shift_member(FILE *archiver, struct dir_member_t *member, long tar
         move_chunks(archiver, size, file_size(archiver), target_end + member->stored_size);
     }
 
-    // TODO TODO
-    // truncate(fileno(archiver), target_end);
+    ftruncate(fileno(archiver), size);
 }
 
 void read_write(FILE *read_file, FILE *write_file, long bytes_io, int read_offset, int write_offset, int mode, struct dir_member_t *member) {
@@ -73,25 +74,40 @@ void read_write(FILE *read_file, FILE *write_file, long bytes_io, int read_offse
         case READ_WRITE_UNCOMPRESSED:
             fread(member_content, 1, bytes_io, read_file);
             fwrite(member_content, 1, bytes_io, write_file);
+
             break;
         case READING_COMPRESSED:
+            if (member == NULL) {
+                log_error(MEMBER_NOT_FOUND, NULL);
+                return;
+            }
+
             fread(compressed_content, 1, bytes_io, read_file);
+
             LZ_Uncompress((unsigned char *) compressed_content, (unsigned char *) member_content, bytes_io);
             fwrite(member_content, 1, member->original_size, write_file);
-            // COLOCAR IF MEMBER != NULL
+
             edit_dir_member(member, DONT_CHANGE, DONT_CHANGE ,DONT_CHANGE);
+
             break;
         case WRITING_COMPRESSED:
+            if (member == NULL) {
+                log_error(MEMBER_NOT_FOUND, NULL);
+                return;
+            }
+
             fread(member_content, 1, bytes_io, read_file);
+
             int compressed_size = LZ_Compress((unsigned char *) member_content, (unsigned char *) compressed_content, bytes_io);
+
             if (compressed_size >= bytes_io) {
                 fwrite(member_content, 1, bytes_io, write_file);
                 edit_dir_member(member, DONT_CHANGE, DONT_CHANGE ,DONT_CHANGE);
-            }
-            else {
+            } else {
                 fwrite(compressed_content, 1, compressed_size, write_file);
                 edit_dir_member(member, compressed_size, DONT_CHANGE ,DONT_CHANGE);
             }
+
             break;
         default:
             log_error(INTERNAL_ERROR, NULL);
@@ -100,6 +116,7 @@ void read_write(FILE *read_file, FILE *write_file, long bytes_io, int read_offse
 
     rewind(read_file);
     rewind(write_file);
+
     free(member_content);
     free(compressed_content);
 }
