@@ -1,10 +1,11 @@
-
-#include "dir_member.h"
-
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "utils.h"
+#include "dir_member.h"
+
 
 struct dir_member_t *create_dir_member(char *member_name, int compressed_size, int offset, int pos) {
     struct dir_member_t *dir_member = malloc(sizeof(struct dir_member_t));
@@ -15,7 +16,7 @@ struct dir_member_t *create_dir_member(char *member_name, int compressed_size, i
     strcpy(dir_member->name, member_name);
     dir_member->original_size = buf.st_size;
 
-    if (compressed_size == -1) 
+    if (compressed_size == DONT_CHANGE)
         dir_member->stored_size = dir_member->original_size;
     else
         dir_member->stored_size = compressed_size;
@@ -34,19 +35,19 @@ void edit_dir_member(struct dir_member_t *dir_member, int compressed_size, int o
     stat(dir_member->name, &buf);
 
     dir_member->original_size = buf.st_size;
-
-    if (compressed_size == -1)
-        dir_member->stored_size = dir_member->original_size;
-    else
-        dir_member->stored_size = compressed_size;
-
     dir_member->uid = buf.st_uid;
     dir_member->last_modification = buf.st_mtime;
-    dir_member->order = pos;
-    dir_member->offset = offset;
+    dir_member->stored_size = dir_member->original_size;
 
+    if (compressed_size != DONT_CHANGE)
+        dir_member->stored_size = compressed_size;
+
+    if (pos != DONT_CHANGE)
+        dir_member->order = pos;
+
+    if (offset != DONT_CHANGE)
+        dir_member->offset = offset;
 }
-
 
 void log_member(struct dir_member_t *dir_member) {
     printf("Nome: %s, Id: %d, Tamanho Original: %d, Tamanho guardado: %d, Última modificação: %li, Offset: %d, Posição: %u",

@@ -1,7 +1,6 @@
 #ifndef DIR_MEMBER_H
 #define DIR_MEMBER_H
 
-#include <stdio.h>
 #include <sys/types.h>
 
 struct dir_member_t {

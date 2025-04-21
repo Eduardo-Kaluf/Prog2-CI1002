@@ -2,13 +2,16 @@ CFLAGS = -Wall -Wextra -Werror -g -std=c99
 
 CC = gcc
 
-OBJS = main.o directory.o dir_member.o archiver.o utils.o logger.o content.o
+OBJS = main.o directory.o dir_member.o archiver.o utils.o logger.o content.o lz.o
 
 # Default target when you just run `make`
 all: VINAc
 
 VINAc: $(OBJS)
 	$(CC) -o VINAc $(OBJS)
+
+lz.o: lz.c lz.h
+	$(CC) -c $(CFLAGS) lz.c
 
 content.o: content.c content.h
 	$(CC) -c $(CFLAGS) content.c

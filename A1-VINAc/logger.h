@@ -1,6 +1,6 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-// Rest of header file contents go here
+void log_error(int error, char *member_name);
 
 #endif

@@ -1,13 +1,14 @@
-//
-// Created by eduardo-kaluf on 19/04/25.
-//
-
-#include "content.h"
-
 #include <stdio.h>
+
+#include <stdlib.h>
 
 #include "dir_member.h"
 #include "utils.h"
+#include "content.h"
+#include "lz.h"
+#include "files.h"
+#include "logger.h"
+
 
 void move_member(FILE *archiver, struct dir_member_t *member_to_move, int offset_to) {
     char buffer[BUFFER_SIZE];
@@ -21,8 +22,6 @@ void move_member(FILE *archiver, struct dir_member_t *member_to_move, int offset
     fseek(archiver, 0, SEEK_SET);
 }
 
-
-// ESSA FUNÇÃO DEVE FAZER FTRUNCATE TAMBEM
 void move_chunks(FILE *archiver, int start, int finish, int write_position) {
     char buffer[BUFFER_SIZE];
 
@@ -45,4 +44,62 @@ void move_chunks(FILE *archiver, int start, int finish, int write_position) {
     }
 
     fseek(archiver, 0, SEEK_SET);
+}
+
+void move_and_shift_member(FILE *archiver, struct dir_member_t *member, long target_end, long size, int forward) {
+
+    if (forward) {
+        move_chunks(archiver, target_end, size, target_end + member->stored_size);
+        move_member(archiver, member, target_end);
+        move_chunks(archiver, member->offset + member->stored_size, file_size(archiver), member->offset);
+    } else {
+        move_chunks(archiver, target_end, member->offset, size);
+        move_member(archiver, member, target_end);
+        move_chunks(archiver, size, file_size(archiver), target_end + member->stored_size);
+    }
+
+    // TODO TODO
+    // truncate(fileno(archiver), target_end);
+}
+
+void read_write(FILE *read_file, FILE *write_file, long bytes_io, int read_offset, int write_offset, int mode, struct dir_member_t *member) {
+    char *member_content = malloc(bytes_io * sizeof(char));
+    char *compressed_content = malloc(bytes_io * sizeof(char) * 2);
+
+    fseek(read_file, read_offset, SEEK_SET);
+    fseek(write_file, write_offset, SEEK_SET);
+
+    switch (mode) {
+        case READ_WRITE_UNCOMPRESSED:
+            fread(member_content, 1, bytes_io, read_file);
+            fwrite(member_content, 1, bytes_io, write_file);
+            break;
+        case READING_COMPRESSED:
+            fread(compressed_content, 1, bytes_io, read_file);
+            LZ_Uncompress((unsigned char *) compressed_content, (unsigned char *) member_content, bytes_io);
+            fwrite(member_content, 1, member->original_size, write_file);
+            // COLOCAR IF MEMBER != NULL
+            edit_dir_member(member, DONT_CHANGE, DONT_CHANGE ,DONT_CHANGE);
+            break;
+        case WRITING_COMPRESSED:
+            fread(member_content, 1, bytes_io, read_file);
+            int compressed_size = LZ_Compress((unsigned char *) member_content, (unsigned char *) compressed_content, bytes_io);
+            if (compressed_size >= bytes_io) {
+                fwrite(member_content, 1, bytes_io, write_file);
+                edit_dir_member(member, DONT_CHANGE, DONT_CHANGE ,DONT_CHANGE);
+            }
+            else {
+                fwrite(compressed_content, 1, compressed_size, write_file);
+                edit_dir_member(member, compressed_size, DONT_CHANGE ,DONT_CHANGE);
+            }
+            break;
+        default:
+            log_error(INTERNAL_ERROR, NULL);
+            break;
+    }
+
+    rewind(read_file);
+    rewind(write_file);
+    free(member_content);
+    free(compressed_content);
 }
