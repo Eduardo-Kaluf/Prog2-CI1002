@@ -5,6 +5,7 @@
 
 #include "utils.h"
 #include "dir_member.h"
+#include "logger.h"
 
 
 struct dir_member_t *create_dir_member(char *member_name, int compressed_size, int offset, int pos) {
@@ -50,6 +51,20 @@ void edit_dir_member(struct dir_member_t *dir_member, int compressed_size, int o
 }
 
 void log_member(struct dir_member_t *dir_member) {
+
+    #if HOMOLOG
+        printf("Nome: %s, Id: %d, Tamanho Original: %d, Tamanho guardado: %d, Offset: %d, Posição: %u",
+                dir_member->name,
+                dir_member->uid,
+                dir_member->original_size,
+                dir_member->stored_size,
+                dir_member->offset,
+                dir_member->order
+        );
+        printf("\n");
+        return;
+    #endif
+
     printf("Nome: %s, Id: %d, Tamanho Original: %d, Tamanho guardado: %d, Última modificação: %li, Offset: %d, Posição: %u",
             dir_member->name,
             dir_member->uid,

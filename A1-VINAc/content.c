@@ -27,22 +27,44 @@ void move_member(FILE *archiver, struct dir_member_t *member_to_move, int offset
 void move_chunks(FILE *archiver, int start, int finish, int write_position) {
     char buffer[BUFFER_SIZE];
 
-    for (long i = start; i < finish; ) {
-        long chunk_start = i;
+    int direction = 1;
 
-        int bytes_to_read = BUFFER_SIZE;
+    if (write_position > start && write_position < finish)
+        direction = -1;
 
-        if (chunk_start + BUFFER_SIZE > finish)
-            bytes_to_read = finish - chunk_start;
+
+    long i = finish;
+
+    if (direction == 1)
+        i = start;
+
+    while ((direction == 1 && i < finish) || (direction == -1 && i > start)) {
+        long chunk_start;
+        int bytes_to_read;
+
+        if (direction == 1) {
+            chunk_start = i;
+            bytes_to_read = BUFFER_SIZE;
+            if (chunk_start + BUFFER_SIZE > finish)
+                bytes_to_read = finish - chunk_start;
+        } else {
+            chunk_start = i - BUFFER_SIZE;
+            if (chunk_start < start) {
+                chunk_start = start;
+                bytes_to_read = i - start;
+            } else {
+                bytes_to_read = BUFFER_SIZE;
+            }
+        }
 
         fseek(archiver, chunk_start, SEEK_SET);
         fread(buffer, 1, bytes_to_read, archiver);
 
-        fseek(archiver, write_position, SEEK_SET);
+        long write_offset = write_position + (chunk_start - start);
+        fseek(archiver, write_offset, SEEK_SET);
         fwrite(buffer, 1, bytes_to_read, archiver);
 
-        write_position += bytes_to_read;
-        i += bytes_to_read;
+        i += direction * bytes_to_read;
     }
 
     fseek(archiver, 0, SEEK_SET);

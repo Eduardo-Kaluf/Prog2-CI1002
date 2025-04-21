@@ -18,7 +18,7 @@ void log_error(int error, char *member_name) {
             printf("Arquivo está em branco\n");
             break;
         case ARCHIVE_IS_BLANK:
-            printf("Arquivo de arquivamento está em branco\n");
+            printf("Archiver está em branco\n");
             break;
         case MEMBER_NOT_FOUND:
             if (member_name != NULL)
@@ -41,6 +41,9 @@ void log_error(int error, char *member_name) {
         case INTERNAL_ERROR:
             printf("Erro interno do servidor\n");
             break;
+        case DUPLICATED_MEMBER:
+            printf("Membro duplicado\n");
+            break;
         default:
             printf("Erro desconhecido\n");
             break;
@@ -59,4 +62,6 @@ void log_content(FILE *archiver) {
     fseek(archiver, first_member.offset, SEEK_SET);
     while ((ch = fgetc(archiver)) != EOF)
         putchar(ch);
+
+    printf("\n");
 }

@@ -14,6 +14,7 @@
 #define TARGET 1
 #define ARCHIVER_POSITION 2
 #define OPTION_POSITION 1
+#define HYPHEN_POSITION 0
 #define OPTION_CHAR 1
 #define OPTION_SIZE 2
 #define COMPRESS 1
@@ -33,10 +34,13 @@ enum Errors {
     WRONG_AMOUNT_OF_PARAMETERS,
     OPTION_DOES_NOT_EXIST,
     INTERNAL_ERROR,
+    DUPLICATED_MEMBER
 };
 
 void setup_args(char ***args, int *arg_size);
 
-int graceful_shutdown(FILE* archiver, int error);
+int graceful_shutdown(FILE* archiver, int error, FILE* backup, char *backup_name);
+
+int has_duplicates(char *arr[], int size);
 
 #endif
