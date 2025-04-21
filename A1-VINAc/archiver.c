@@ -151,7 +151,7 @@ char option_m(FILE *archiver, char *member_to_move, char *target) {
     if (dir_target == NULL || dir_member_to_move == NULL)
         return MEMBER_NOT_FOUND;
 
-    if (dir_target->order == dir_member_to_move->order + 1)
+    if (dir_member_to_move->order == dir_target->order + 1)
         return OK;
 
     long size = file_size(archiver);
@@ -161,8 +161,9 @@ char option_m(FILE *archiver, char *member_to_move, char *target) {
     if (dir_member_to_move->order < dir_target->order) {
         move_and_shift_member(archiver, dir_member_to_move, target_end, size, true);
 
-        fix_order(dir_members, dir_size, dir_member_to_move->order + 1, dir_target->order + 1, -1);
         fix_offsets(dir_members, dir_size, -dir_member_to_move->stored_size,dir_member_to_move->order + 1, dir_target->order + 1);
+        fix_order(dir_members, dir_size, dir_member_to_move->order + 1, dir_target->order + 1, -1);
+        target_end -= dir_member_to_move->stored_size;
     } else {
         move_and_shift_member(archiver, dir_member_to_move, target_end, size, false);
 
@@ -194,9 +195,11 @@ char option_r(FILE *archiver, char **removing_members, int removing_size) {
         if (current_removing_member == NULL)
             return MEMBER_NOT_FOUND;
 
+        int member_size = current_removing_member->stored_size;
+
         move_and_shift_member(archiver, current_removing_member, archiver_size, archiver_size, true);
-        remove_by_name(&dir_members, current_removing_member->name, &dir_size);
-        ftruncate(fileno(archiver), archiver_size - current_removing_member->stored_size);
+        dir_members = remove_by_name(dir_members, current_removing_member->name, &dir_size);
+        ftruncate(fileno(archiver), archiver_size - member_size);
     }
 
     if (dir_size == 0) {
@@ -204,7 +207,7 @@ char option_r(FILE *archiver, char **removing_members, int removing_size) {
         return OK;
     }
 
-    write_directory(archiver, dir_members, dir_size, removing_size);
+    write_directory(archiver, dir_members, dir_size, -removing_size);
 
     return OK;
 }

@@ -14,14 +14,28 @@
 
 void move_member(FILE *archiver, struct dir_member_t *member_to_move, int offset_to) {
     char buffer[BUFFER_SIZE];
+    int bytes_remaining = member_to_move->stored_size;
+    long original_offset = member_to_move->offset;
 
-    fseek(archiver, member_to_move->offset, SEEK_SET);
-    fread(buffer, 1, member_to_move->stored_size, archiver);
+    fseek(archiver, original_offset, SEEK_SET);
 
     fseek(archiver, offset_to, SEEK_SET);
-    fwrite(buffer, 1, member_to_move->stored_size, archiver);
 
-    fseek(archiver, 0, SEEK_SET);
+    while (bytes_remaining > 0) {
+        int bytes_to_copy = (bytes_remaining < BUFFER_SIZE) ? bytes_remaining : BUFFER_SIZE;
+
+        fseek(archiver, original_offset, SEEK_SET);
+        fread(buffer, 1, bytes_to_copy, archiver);
+
+        fseek(archiver, offset_to, SEEK_SET);
+        fwrite(buffer, 1, bytes_to_copy, archiver);
+
+        original_offset += bytes_to_copy;
+        offset_to += bytes_to_copy;
+        bytes_remaining -= bytes_to_copy;
+    }
+
+    rewind(archiver);
 }
 
 void move_chunks(FILE *archiver, int start, int finish, int write_position) {

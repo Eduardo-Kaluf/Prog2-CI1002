@@ -50,29 +50,51 @@ void write_directory(FILE *archiver, struct dir_member_t **dir_members, int tota
         fwrite(dir_members[i], DIR_MEMBER_SIZE , 1, archiver);
 }
 
-void remove_by_name(struct dir_member_t ***dir_members, char *target, int *dir_size) {
+struct dir_member_t **
+remove_by_name(struct dir_member_t **dir_members,
+               char *target,
+               int *dir_size)
+{
+    int found = -1;
+
+    // Find the index of the target
     for (int i = 0; i < *dir_size; i++) {
-        if (strcmp((*dir_members)[i]->name, target) == 0) {
-            int removed_size = (*dir_members)[i]->stored_size;
-
-            free((*dir_members)[i]);
-
-            for (int j = i; j < *dir_size - 1; j++) {
-                (*dir_members)[j] = (*dir_members)[j + 1];
-                (*dir_members)[j]->order -= 1;
-                (*dir_members)[j]->offset -= removed_size;
-            }
-
-            (*dir_size)--;
-
-            struct dir_member_t **tmp = realloc(*dir_members, (*dir_size) * sizeof(struct dir_member_t *));
-            if (tmp != NULL || *dir_size == 0) {
-                *dir_members = tmp;
-            }
-
-            return;
+        if (strcmp(dir_members[i]->name, target) == 0) {
+            found = i;
+            break;
         }
     }
+
+    if (found == -1)
+        return dir_members; // not found, nothing to do
+
+    int removed_size = dir_members[found]->stored_size;
+    free(dir_members[found]);
+
+    // Allocate new array with size - 1
+    struct dir_member_t **new_array = NULL;
+    if (*dir_size - 1 > 0)
+        new_array = malloc((*dir_size - 1) * sizeof(*new_array));
+
+    // Copy elements before and after the removed one
+    int new_index = 0;
+    for (int i = 0; i < *dir_size; i++) {
+        if (i == found)
+            continue;
+        new_array[new_index++] = dir_members[i];
+    }
+
+    // Update order/offsets for the moved elements
+    for (int i = found; i < *dir_size - 1; i++) {
+        new_array[i]->order  -= 1;
+        new_array[i]->offset -= removed_size;
+    }
+
+    // Free the old array and update dir_size
+    free(dir_members);
+    (*dir_size)--;
+
+    return new_array;
 }
 
 void order_dir_members(struct dir_member_t **v, int append_size) {

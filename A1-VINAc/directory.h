@@ -7,7 +7,7 @@ void read_dir_members(FILE *archiver, struct dir_member_t ***dir_members, int *d
 
 void write_directory(FILE *archiver, struct dir_member_t **dir_members, int total_size, int append_size);
 
-void remove_by_name(struct dir_member_t ***dir_members, char *target, int *dir_size);
+struct dir_member_t **remove_by_name(struct dir_member_t **dir_members, char *target, int *dir_size);
 
 void order_dir_members(struct dir_member_t **v, int append_size);
 

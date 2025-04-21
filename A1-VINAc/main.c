@@ -92,6 +92,9 @@ int main(int argc, char **argv) {
                 restore_backup(archiver, &backup, backup_name);
             break;
         case 'c':
+            if (argc != 0)
+                return graceful_shutdown(archiver, WRONG_AMOUNT_OF_PARAMETERS, NULL, NULL);
+
             error_code = option_c(archiver);
             break;
         default:
@@ -100,8 +103,11 @@ int main(int argc, char **argv) {
     }
 
     #if HOMOLOG
-        option_c(archiver);
-        log_content(archiver);
+        if (error_code == OK) {
+            option_c(archiver);
+            log_content(archiver);
+
+        }
     #endif
 
     graceful_shutdown(archiver, error_code, backup, backup_name);
