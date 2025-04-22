@@ -106,7 +106,6 @@ int main(int argc, char **argv) {
         if (error_code == OK) {
             option_c(archiver);
             log_content(archiver);
-
         }
     #endif
 

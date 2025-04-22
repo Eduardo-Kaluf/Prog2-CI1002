@@ -29,14 +29,13 @@ rm ./out.txt
 diff ./out_files/expected_errors/OPTION_IS_NOT_CORRECT.test ./out.txt
 rm ./out.txt
 
-# Remove o arquivo de teste de arquivador, se existir
-rm ./archiver-test.vc
-
 ## TESTES -p
 
 ### TESTES COM O ARQUIVER INEXISTENTE
 
 #### FORÇANDO ERROS
+
+rm ./archiver-test.vc
 
 # Teste 1: Sem parâmetros suficientes após o -p
 # Backup deve ser ativado e archiver permanecerá vazio
@@ -505,6 +504,143 @@ diff ./out_files/expected_outputs/test1.sol ./out.txt
 rm ./out.txt
 rm ./archiver-test.vc
 
+## TESTES -x
+
+#### FORÇANDO ERROS
+
+./VINAc-homologation -x archiver-test.vc > ./out.txt
+diff ./out_files/expected_errors/ARCHIVE_IS_BLANK.test ./out.txt
+rm ./out.txt
+rm ./archiver-test.vc
+
+touch ./archiver-test.vc
+./VINAc-homologation -x archiver-test.vc > ./out.txt
+diff ./out_files/expected_errors/ARCHIVE_IS_BLANK.test ./out.txt
+rm ./out.txt
+rm ./archiver-test.vc
+
+#### FLUXO ESPERADO
+
+./VINAc-homologation -p archiver-test.vc ./in_files/test1.txt > ./dump.txt
+./VINAc-homologation -x archiver-test.vc ./in_files/test2.txt > ./out.txt
+diff ./out_files/expected_outputs/test2_not_found_test1_found.sol ./out.txt
+rm ./out.txt
+rm ./archiver-test.vc
+
+
+echo "TEST" > ./dinamic.txt
+echo "TEST" > ./static.txt
+./VINAc-homologation -p archiver-test.vc ./dinamic.txt > ./dump.txt
+echo "CHANGED" > ./dinamic.txt
+./VINAc-homologation -x archiver-test.vc ./dinamic.txt > ./out.txt
+diff ./dinamic.txt ./static.txt
+rm ./archiver-test.vc
+rm ./dinamic.txt
+rm ./static.txt
+
+echo "TEST" > ./dinamic.txt
+echo "TEST" > ./static.txt
+./VINAc-homologation -p archiver-test.vc ./in_files/test1.txt ./dinamic.txt ./in_files/test3.txt > ./dump.txt
+echo "CHANGED" > ./dinamic.txt
+./VINAc-homologation -x archiver-test.vc ./dinamic.txt > ./out.txt
+diff ./dinamic.txt ./static.txt
+rm ./archiver-test.vc
+rm ./dinamic.txt
+rm ./static.txt
+
+echo "TEST" > ./dinamic.txt
+echo "TEST" > ./dinamic2.txt
+echo "TEST" > ./static.txt
+./VINAc-homologation -p archiver-test.vc ./in_files/test1.txt ./dinamic.txt ./in_files/test3.txt ./dinamic2.txt > ./dump.txt
+echo "CHANGED" > ./dinamic.txt
+echo "CHANGED" > ./dinamic2.txt
+./VINAc-homologation -x archiver-test.vc ./dinamic.txt ./dinamic2.txt > ./out.txt
+diff ./dinamic.txt ./static.txt
+diff ./dinamic2.txt ./static.txt
+rm ./archiver-test.vc
+rm ./dinamic.txt
+rm ./dinamic2.txt
+rm ./static.txt
+
+cat ./in_files/test_giant_file.txt > ./dinamic.txt
+cat ./in_files/test_giant_file.txt > ./static.txt
+./VINAc-homologation -p archiver-test.vc ./dinamic.txt > ./dump.txt
+echo "CHANGED" > ./dinamic.txt
+./VINAc-homologation -x archiver-test.vc ./dinamic.txt > ./out.txt
+diff ./dinamic.txt ./static.txt
+rm ./archiver-test.vc
+rm ./dinamic.txt
+rm ./static.txt
+
+#####
+
+echo "TEST" > ./dinamic.txt
+echo "TEST" > ./static.txt
+./VINAc-homologation -p archiver-test.vc ./dinamic.txt > ./dump.txt
+echo "CHANGED" > ./dinamic.txt
+./VINAc-homologation -x archiver-test.vc > ./out.txt
+diff ./dinamic.txt ./static.txt
+rm ./archiver-test.vc
+rm ./dinamic.txt
+rm ./static.txt
+
+echo "TEST" > ./dinamic.txt
+echo "TEST" > ./dinamic2.txt
+echo "TEST" > ./dinamic3.txt
+echo "TEST" > ./static.txt
+./VINAc-homologation -p archiver-test.vc ./dinamic.txt ./dinamic2.txt ./dinamic3.txt  > ./dump.txt
+echo "CHANGED" > ./dinamic.txt
+echo "CHANGED" > ./dinamic2.txt
+echo "CHANGED" > ./dinamic3.txt
+./VINAc-homologation -x archiver-test.vc > ./out.txt
+diff ./dinamic.txt ./static.txt
+diff ./dinamic2.txt ./static.txt
+diff ./dinamic3.txt ./static.txt
+rm ./archiver-test.vc
+rm ./dinamic.txt
+rm ./dinamic2.txt
+rm ./dinamic3.txt
+rm ./static.txt
+
+cat ./in_files/test_giant_file.txt > ./dinamic.txt
+cat ./in_files/test_giant_file.txt > ./static.txt
+./VINAc-homologation -p archiver-test.vc ./dinamic.txt > ./dump.txt
+echo "CHANGED" > ./dinamic.txt
+./VINAc-homologation -x archiver-test.vc > ./out.txt
+diff ./dinamic.txt ./static.txt
+rm ./archiver-test.vc
+rm ./dinamic.txt
+rm ./static.txt
+
+## TESTES -z com -x
+
+#COMPACTOU E DIMINUIU OS BYTES
+cat ./in_files/test_giant_file.txt > ./dinamic.txt
+cat ./in_files/test_giant_file.txt > ./static.txt
+./VINAc-homologation -z archiver-test.vc ./dinamic.txt > ./dump.txt
+echo "CHANGED" > ./dinamic.txt
+./VINAc-homologation -x archiver-test.vc ./dinamic.txt > ./out.txt
+diff ./dinamic.txt ./static.txt
+rm ./archiver-test.vc
+rm ./dinamic.txt
+rm ./static.txt
+
+##TENTOU COMPACTAR E GUARDOU DESCOMPACTADO
+echo "ABCDEFGHIJKLMNOPQRSTUVWXYZ" > ./dinamic.txt
+echo "ABCDEFGHIJKLMNOPQRSTUVWXYZ" > ./static.txt
+./VINAc-homologation -z archiver-test.vc ./dinamic.txt > ./dump.txt
+echo "CHANGED" > ./dinamic.txt
+./VINAc-homologation -x archiver-test.vc ./dinamic.txt > ./out.txt
+diff ./dinamic.txt ./static.txt
+rm ./archiver-test.vc
+rm ./dinamic.txt
+rm ./static.txt
+
+
+rm ./out.txt
+rm ./dump.txt
+touch ./archiver-test.vc
+rm ./archiver-test.vc
 
 cd ..
 

@@ -118,10 +118,11 @@ char option_x(FILE *archiver, char **members_to_extract, int extraction_size) {
         else
             extracting = find_by_name(dir_members, members_to_extract[i], dir_size);
 
-        if (extracting == NULL)
+        if (extracting == NULL) {
             log_error(MEMBER_NOT_FOUND, members_to_extract[i]);
+            continue;
+        }
 
-        // TODO TODO TODO VERIFICAR SE DA CERTO QUANDO UM ARQUIVO COM O MESMO NOME JA EXISTE
         FILE *out_file = fopen(extracting->name, "w");
 
         if (extracting->original_size == extracting->stored_size)

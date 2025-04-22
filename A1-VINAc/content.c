@@ -100,8 +100,8 @@ void move_and_shift_member(FILE *archiver, struct dir_member_t *member, long tar
 }
 
 void read_write(FILE *read_file, FILE *write_file, long bytes_io, int read_offset, int write_offset, int mode, struct dir_member_t *member) {
-    char *member_content = malloc(bytes_io * sizeof(char));
-    char *compressed_content = malloc(bytes_io * sizeof(char) * 2);
+    char *member_content = malloc(bytes_io * sizeof(char) * 2);
+    char *compressed_content = malloc(bytes_io * sizeof(char));
 
     fseek(read_file, read_offset, SEEK_SET);
     fseek(write_file, write_offset, SEEK_SET);
