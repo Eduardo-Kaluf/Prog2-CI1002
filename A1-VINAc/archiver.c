@@ -147,6 +147,9 @@ char option_x(FILE *archiver, char **members_to_extract, int extraction_size) {
         fclose(out_file);
     }
 
+    if (dir_members != NULL)
+        free_dir_members(&dir_members, dir_size);
+
     return OK;
 }
 
@@ -216,8 +219,11 @@ char option_r(FILE *archiver, char **removing_members, int removing_size) {
         long archiver_size = file_size(archiver);
         struct dir_member_t *current_removing_member = find_by_name(dir_members, removing_members[i], dir_size);
 
-        if (current_removing_member == NULL)
+        if (current_removing_member == NULL) {
+            if (dir_members != NULL)
+                free_dir_members(&dir_members, dir_size);
             return MEMBER_NOT_FOUND;
+        }
 
         int member_size = current_removing_member->stored_size;
 
@@ -228,10 +234,15 @@ char option_r(FILE *archiver, char **removing_members, int removing_size) {
 
     if (dir_size == 0) {
         ftruncate(fileno(archiver), START_OF_FILE);
+        if (dir_members != NULL)
+            free_dir_members(&dir_members, dir_size);
         return OK;
     }
 
     write_directory(archiver, dir_members, dir_size, -removing_size);
+
+    if (dir_members != NULL)
+        free_dir_members(&dir_members, dir_size);
 
     return OK;
 }

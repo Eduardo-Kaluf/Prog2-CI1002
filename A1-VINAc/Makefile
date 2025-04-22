@@ -1,6 +1,4 @@
-#CFLAGS = -Wall -Wextra -Werror -g -std=c99
-CFLAGS = -g -std=c99
-#// TOOD TODO TODO
+CFLAGS = -Wall -Wextra -Werror -g -std=c99
 
 CC = gcc
 

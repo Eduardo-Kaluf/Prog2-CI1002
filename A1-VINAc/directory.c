@@ -50,14 +50,9 @@ void write_directory(FILE *archiver, struct dir_member_t **dir_members, int tota
         fwrite(dir_members[i], DIR_MEMBER_SIZE , 1, archiver);
 }
 
-struct dir_member_t **
-remove_by_name(struct dir_member_t **dir_members,
-               char *target,
-               int *dir_size)
-{
+struct dir_member_t **remove_by_name(struct dir_member_t **dir_members, char *target, int *dir_size) {
     int found = -1;
 
-    // Find the index of the target
     for (int i = 0; i < *dir_size; i++) {
         if (strcmp(dir_members[i]->name, target) == 0) {
             found = i;
@@ -66,17 +61,15 @@ remove_by_name(struct dir_member_t **dir_members,
     }
 
     if (found == -1)
-        return dir_members; // not found, nothing to do
+        return dir_members;
 
     int removed_size = dir_members[found]->stored_size;
     free(dir_members[found]);
 
-    // Allocate new array with size - 1
     struct dir_member_t **new_array = NULL;
     if (*dir_size - 1 > 0)
         new_array = malloc((*dir_size - 1) * sizeof(*new_array));
 
-    // Copy elements before and after the removed one
     int new_index = 0;
     for (int i = 0; i < *dir_size; i++) {
         if (i == found)
@@ -84,13 +77,11 @@ remove_by_name(struct dir_member_t **dir_members,
         new_array[new_index++] = dir_members[i];
     }
 
-    // Update order/offsets for the moved elements
     for (int i = found; i < *dir_size - 1; i++) {
         new_array[i]->order  -= 1;
         new_array[i]->offset -= removed_size;
     }
 
-    // Free the old array and update dir_size
     free(dir_members);
     (*dir_size)--;
 

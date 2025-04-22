@@ -7,6 +7,9 @@
 #include <string.h>
 
 #include "utils.h"
+
+#include <sys/stat.h>
+
 #include "logger.h"
 
 
@@ -28,7 +31,9 @@ int graceful_shutdown(FILE* archiver, int error, FILE* backup, char **backup_nam
     if (backup != NULL)
         fclose(backup);
     if (backup_name != NULL) {
-        remove(*backup_name);
+        struct stat st;
+        if (stat(*backup_name, &st) == 0)
+            remove(*backup_name);
         free(*backup_name);
     }
 
