@@ -32,11 +32,13 @@ FILE *create_backup(FILE *archiver, char **backup_name) {
     return backup;
 }
 
-void restore_backup(FILE *archiver, FILE **backup, char *backup_name) {
+void restore_backup(FILE *archiver, FILE **backup, char **backup_name) {
     ftruncate(fileno(archiver), START_OF_FILE);
     read_write(*backup, archiver, file_size(*backup), START_OF_FILE, START_OF_FILE, READ_WRITE_UNCOMPRESSED, NULL);
 
     fclose(*backup);
-    remove(backup_name);
+    remove(*backup_name);
     *backup = NULL;
+    free(*backup_name);
+    *backup_name = NULL;
 }

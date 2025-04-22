@@ -17,4 +17,6 @@ void fix_offsets(struct dir_member_t **dir_members, int n, int offset_fix, int o
 
 void fix_order(struct dir_member_t **dir_members, int n, int order_start, int order_end, int order_increment);
 
+void free_dir_members(struct dir_member_t ***dir_members, int dir_size);
+
 #endif

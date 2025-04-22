@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
             error_code = option_i(archiver, argv, argc, UNCOMPRESSED);
 
             if (error_code != OK)
-                restore_backup(archiver, &backup, backup_name);
+                restore_backup(archiver, &backup, &backup_name);
 
             break;
         case 'z':
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
             error_code = option_i(archiver, argv, argc, COMPRESS);
 
             if (error_code != OK)
-                restore_backup(archiver, &backup, backup_name);
+                restore_backup(archiver, &backup, &backup_name);
 
             break;
         case 'm':
@@ -89,7 +89,8 @@ int main(int argc, char **argv) {
             error_code = option_r(archiver, argv, argc);
 
             if (error_code != OK)
-                restore_backup(archiver, &backup, backup_name);
+                restore_backup(archiver, &backup, &backup_name);
+
             break;
         case 'c':
             if (argc != 0)
@@ -109,5 +110,5 @@ int main(int argc, char **argv) {
         }
     #endif
 
-    graceful_shutdown(archiver, error_code, backup, backup_name);
+    graceful_shutdown(archiver, error_code, backup, &backup_name);
 }

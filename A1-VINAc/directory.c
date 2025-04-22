@@ -134,3 +134,14 @@ void fix_order(struct dir_member_t **dir_members, int n, int order_start, int or
     for (int i = order_start; i < order_end; i++)
             dir_members[i]->order = dir_members[i]->order + order_increment;
 }
+
+void free_dir_members(struct dir_member_t ***dir_members, int dir_size) {
+    struct dir_member_t **members = *dir_members;
+
+    for (int i = 0; i < dir_size; i++) {
+        free(members[i]);
+    }
+
+    free(members);
+    *dir_members = NULL;
+}

@@ -14,6 +14,6 @@ long is_empty(FILE *file);
 
 FILE *create_backup(FILE *archiver, char **backup_name);
 
-void restore_backup(FILE *archiver, FILE **backup, char *backup_name);
+void restore_backup(FILE *archiver, FILE **backup, char **backup_name);
 
 #endif

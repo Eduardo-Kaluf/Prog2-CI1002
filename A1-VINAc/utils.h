@@ -39,7 +39,7 @@ enum Errors {
 
 void setup_args(char ***args, int *arg_size);
 
-int graceful_shutdown(FILE* archiver, int error, FILE* backup, char *backup_name);
+int graceful_shutdown(FILE* archiver, int error, FILE* backup, char **backup_name);
 
 int has_duplicates(char *arr[], int size);
 

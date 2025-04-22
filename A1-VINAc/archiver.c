@@ -32,13 +32,20 @@ char option_i(FILE *archiver, char **new_members, int append_size, int compress)
 
         FILE *new_member = fopen(new_members[i], "rb");
 
-        if (new_member == NULL)
+        if (new_member == NULL) {
+            if (dir_members != NULL)
+                free_dir_members(&dir_members, dir_size);
             return FILE_NOT_FOUND;
+        }
 
         long member_size = file_size(new_member);
 
-        if (member_size == 0)
+        if (member_size == 0) {
+            fclose(new_member);
+            if (dir_members != NULL)
+                free_dir_members(&dir_members, dir_size);
             return FILE_IS_BLANK;
+        }
 
         if (dir_intial_size > 0)
             found = find_by_name(dir_members, new_members[i], dir_size);
@@ -75,6 +82,10 @@ char option_i(FILE *archiver, char **new_members, int append_size, int compress)
     // Atualiza o diretório do archive
     write_directory(archiver, dir_members, dir_size, dir_size - dir_intial_size);
 
+    if (dir_members != NULL)
+        free_dir_members(&dir_members, dir_size);
+
+
     return OK;
 }
 
@@ -90,6 +101,9 @@ char option_c(FILE *archiver) {
 
     for (int i = 0; i < dir_size; i++)
         log_member(dir_members[i]);
+
+    if (dir_members != NULL)
+        free_dir_members(&dir_members, dir_size);
 
     return OK;
 }
@@ -149,11 +163,17 @@ char option_m(FILE *archiver, char *member_to_move, char *target) {
     struct dir_member_t *dir_target = find_by_name(dir_members, target, dir_size);
     struct dir_member_t *dir_member_to_move = find_by_name(dir_members, member_to_move, dir_size);
 
-    if (dir_target == NULL || dir_member_to_move == NULL)
+    if (dir_target == NULL || dir_member_to_move == NULL) {
+        if (dir_members != NULL)
+            free_dir_members(&dir_members, dir_size);
         return MEMBER_NOT_FOUND;
+    }
 
-    if (dir_member_to_move->order == dir_target->order + 1)
+    if (dir_member_to_move->order == dir_target->order + 1) {
+        if (dir_members != NULL)
+            free_dir_members(&dir_members, dir_size);
         return OK;
+    }
 
     long size = file_size(archiver);
 
@@ -175,6 +195,9 @@ char option_m(FILE *archiver, char *member_to_move, char *target) {
     edit_dir_member(dir_member_to_move, DONT_CHANGE, target_end, dir_target->order + 1);
 
     write_directory(archiver, dir_members, dir_size, 0);
+
+    if (dir_members != NULL)
+        free_dir_members(&dir_members, dir_size);
 
     return OK;
 }

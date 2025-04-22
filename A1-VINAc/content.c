@@ -46,7 +46,6 @@ void move_chunks(FILE *archiver, int start, int finish, int write_position) {
     if (write_position > start && write_position < finish)
         direction = -1;
 
-
     long i = finish;
 
     if (direction == 1)

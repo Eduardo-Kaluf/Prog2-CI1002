@@ -21,17 +21,18 @@ void setup_args(char ***args, int *arg_size) {
     *args = *args + SHIFT_AMOUNT;
 }
 
-int graceful_shutdown(FILE* archiver, int error, FILE* backup, char *backup_name) {
+int graceful_shutdown(FILE* archiver, int error, FILE* backup, char **backup_name) {
     log_error(error, NULL);
     if (archiver != NULL)
         fclose(archiver);
     if (backup != NULL)
         fclose(backup);
-    if (backup_name != NULL)
-        remove(backup_name);
+    if (backup_name != NULL) {
+        remove(*backup_name);
+        free(*backup_name);
+    }
 
     exit(error);
-    // TODO TODO TODO
 }
 
 int has_duplicates(char *arr[], int size) {
