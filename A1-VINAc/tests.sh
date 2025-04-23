@@ -515,6 +515,13 @@ diff ./out_files/expected_outputs/test123G45.sol ./out.txt
 rm ./out.txt
 rm ./archiver-test.vc
 
+# Teste 8: Mover um membro muito grande
+run ./VINAc-homologation  -p archiver-test.vc ./in_files/test1.txt ./in_files/test2.txt ./in_files/test3.txt ./in_files/test4.txt ./in_files/test_giant_file.txt > ./dump.txt
+run ./VINAc-homologation  -m archiver-test.vc ./in_files/test_giant_file.txt ./in_files/test1.txt > ./out.txt
+diff ./out_files/expected_outputs/test1G234.sol ./out.txt
+rm ./out.txt
+rm ./archiver-test.vc
+
 ## TESTES -r
 
 #### FORÇANDO ERROS
