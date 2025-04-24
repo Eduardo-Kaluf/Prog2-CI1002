@@ -100,6 +100,16 @@ run ./VINAc-homologation  12 archiver-test.vc > ./out.txt
 diff ./out_files/expected_errors/OPTION_IS_NOT_CORRECT.test ./out.txt
 rm ./out.txt
 
+# Teste 6: Archiver com nome inválido
+run ./VINAc-homologation -i c > ./out.txt
+diff ./out_files/expected_errors/ARCHIVER_IS_NOT_VALID.test ./out.txt
+rm ./out.txt
+
+# Teste 7: Archiver sem extensão
+run ./VINAc-homologation -i archiver-test > ./out.txt
+diff ./out_files/expected_errors/ARCHIVER_IS_NOT_VALID.test ./out.txt
+rm ./out.txt
+
 ## TESTES -p
 
 ### TESTES COM O ARQUIVER INEXISTENTE
@@ -719,12 +729,12 @@ rm ./archiver-test.vc
 rm ./dinamic.txt
 rm ./static.txt
 
-## TESTES -z com -x
+## TESTES -i com -x
 
 # Teste 1: Insere um membro que é compactado e tem seus bytes diminuidos, extrai esse mesmo membro
 cat ./in_files/test_giant_file.txt > ./dinamic.txt
 cat ./in_files/test_giant_file.txt > ./static.txt
-run ./VINAc-homologation  -z archiver-test.vc ./dinamic.txt > ./dump.txt
+run ./VINAc-homologation  -i archiver-test.vc ./dinamic.txt > ./dump.txt
 echo "CHANGED" > ./dinamic.txt
 run ./VINAc-homologation  -x archiver-test.vc ./dinamic.txt > ./out.txt
 diff ./dinamic.txt ./static.txt
@@ -736,7 +746,7 @@ rm ./static.txt
 ##TENTOU COMPACTAR E GUARDOU DESCOMPACTADO
 echo "ABCDEFGHIJKLMNOPQRSTUVWXYZ" > ./dinamic.txt
 echo "ABCDEFGHIJKLMNOPQRSTUVWXYZ" > ./static.txt
-run ./VINAc-homologation  -z archiver-test.vc ./dinamic.txt > ./dump.txt
+run ./VINAc-homologation  -i archiver-test.vc ./dinamic.txt > ./dump.txt
 echo "CHANGED" > ./dinamic.txt
 run ./VINAc-homologation  -x archiver-test.vc ./dinamic.txt > ./out.txt
 diff ./dinamic.txt ./static.txt

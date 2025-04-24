@@ -44,6 +44,9 @@ void log_error(int error, char *member_name) {
         case DUPLICATED_MEMBER:
             printf("Membro duplicado\n");
             break;
+        case ARCHIVER_IS_NOT_VALID:
+            printf("Archiver não é válido, certifique-se que '.vc'\n");
+            break;
         default:
             printf("Erro desconhecido\n");
             break;

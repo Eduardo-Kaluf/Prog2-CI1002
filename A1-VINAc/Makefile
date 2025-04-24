@@ -14,7 +14,8 @@ VINAc-homologation: main_homolog.o dir_member_homolog.o $(OBJS_COMMON)
 	$(CC) -o tests/VINAc-homologation main_homolog.o dir_member_homolog.o $(OBJS_COMMON)
 
 VINAc: $(OBJS)
-	$(CC) -o VINAc $(OBJS)
+	mkdir -p ek24
+	$(CC) -o ek24/vina $(OBJS)
 
 main.o: main.c
 	$(CC) -c $(CFLAGS) main.c -o main.o
@@ -50,4 +51,4 @@ files.o: files.c files.h
 	$(CC) -c $(CFLAGS) files.c
 
 clean:
-	rm -f *.o *~ VINAc tests/*.o tests/*~ tests/VINAc-homologation
+	rm -f *.o ./ek24/vina *~ tests/*.o tests/*~ tests/VINAc-homologation

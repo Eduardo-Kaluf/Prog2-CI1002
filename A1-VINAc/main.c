@@ -26,6 +26,10 @@ int main(int argc, char **argv) {
     if (argc < MIN_ARGUMENTS)
         return graceful_shutdown(NULL, NOT_ENOUGH_PARAMETERS, NULL, NULL);
 
+    // O archiver passado precisa ser um ".vc"
+    if (strlen(argv[ARCHIVER_POSITION]) < MIN_ARCHIVER_SIZE || !checks_extension(argv[ARCHIVER_POSITION]))
+        return graceful_shutdown(NULL, ARCHIVER_IS_NOT_VALID, NULL, NULL);
+
     // Aceita argumentos apenas do tipo "-x"
     if (strlen(argv[OPTION_POSITION]) != OPTION_SIZE || argv[OPTION_POSITION][HYPHEN_POSITION] != '-')
         return graceful_shutdown(NULL, OPTION_IS_NOT_CORRECT, NULL, NULL);
@@ -57,7 +61,7 @@ int main(int argc, char **argv) {
                 restore_backup(archiver, &backup, &backup_name);
 
             break;
-        case 'z':
+        case 'i':
             if (argc <= MIN_MEMBERS)
                 return graceful_shutdown(archiver, NOT_ENOUGH_PARAMETERS, NULL, NULL);
 

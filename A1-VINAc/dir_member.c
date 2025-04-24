@@ -38,10 +38,11 @@ void edit_dir_member(struct dir_member_t *dir_member, int compressed_size, int o
     dir_member->original_size = buf.st_size;
     dir_member->uid = buf.st_uid;
     dir_member->last_modification = buf.st_mtime;
-    dir_member->stored_size = dir_member->original_size;
 
     if (compressed_size != DONT_CHANGE)
         dir_member->stored_size = compressed_size;
+    else
+        dir_member->stored_size = dir_member->original_size;
 
     if (pos != DONT_CHANGE)
         dir_member->order = pos;

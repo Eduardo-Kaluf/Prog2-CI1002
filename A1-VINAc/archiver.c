@@ -8,6 +8,9 @@
 #include "dir_member.h"
 #include "directory.h"
 #include "archiver.h"
+
+#include <string.h>
+
 #include "content.h"
 #include "files.h"
 #include "logger.h"
@@ -58,7 +61,7 @@ char option_i(FILE *archiver, char **new_members, int append_size, int compress)
 
             fix_offsets(dir_members, dir_size, -(found->stored_size - member_size), found->order + 1, dir_size);
 
-            edit_dir_member(found, -1, found->offset, found->order);
+            edit_dir_member(found, DONT_CHANGE, found->offset, found->order);
 
             if (compress)
                 read_write(new_member, archiver, member_size, START_OF_FILE, found->offset, WRITING_COMPRESSED, found);
@@ -144,6 +147,8 @@ char option_x(FILE *archiver, char **members_to_extract, int extraction_size) {
         else
             read_write(archiver, out_file, extracting->stored_size, extracting->offset, 0, READING_COMPRESSED, extracting);
 
+        edit_dir_member(extracting, DONT_CHANGE, DONT_CHANGE, DONT_CHANGE);
+
         fclose(out_file);
     }
 
@@ -163,8 +168,21 @@ char option_m(FILE *archiver, char *member_to_move, char *target) {
 
     read_dir_members(archiver, &dir_members, &dir_size);
 
-    struct dir_member_t *dir_target = find_by_name(dir_members, target, dir_size);
     struct dir_member_t *dir_member_to_move = find_by_name(dir_members, member_to_move, dir_size);
+    struct dir_member_t *dir_target = find_by_name(dir_members, target, dir_size);
+    // struct dir_member_t *dir_target = NULL;
+    //
+    // if (strcmp(target, 'null')) {
+    //     int target_end = 0;
+    //
+    //     fix_order(dir_members, dir_size, 0, dir_member_to_move->order, 1);
+    //
+    //     fix_offsets(dir_members, dir_size, dir_member_to_move->stored_size,0, dir_member_to_move->order);
+    //
+    //     edit_dir_member(dir_member_to_move, DONT_CHANGE, dir_size * DIR_MEMBER_SIZE, 0);
+    // }
+    // else
+    //     dir_target = find_by_name(dir_members, target, dir_size);
 
     if (dir_target == NULL || dir_member_to_move == NULL) {
         if (dir_members != NULL)

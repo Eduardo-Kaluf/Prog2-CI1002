@@ -1,4 +1,4 @@
-Nome: ./in_files/test_other_extension.jpg, Id: 4988, Tamanho Original: 315300, Tamanho guardado: 315300, Offset: 160, Posição: 0
+Nome: ./in_files/test_other_extension.jpg, Id: 1000, Tamanho Original: 315300, Tamanho guardado: 315300, Offset: 160, Posição: 0
 ���� JFIF ,,  �� C 
 
 
