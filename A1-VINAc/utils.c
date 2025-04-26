@@ -10,6 +10,7 @@
 
 #include <sys/stat.h>
 
+#include "dir_member.h"
 #include "logger.h"
 
 
@@ -50,6 +51,6 @@ int has_duplicates(char *arr[], int size) {
     return 0;
 }
 
-int checks_extension(char *str) {
-    return strcmp(str + strlen(str) - 3, ".vc") == 0;
+int checks_extension(char *archiver_name) {
+    return strcmp(archiver_name + strlen(archiver_name) - 3, ".vc") == 0;
 }

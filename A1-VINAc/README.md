@@ -29,7 +29,7 @@ logger.c:
     Responsável por administrar mensagens de erro 
 
 lz.c:
-    - Funções responsáveis pela parte de compressão e descompressão do arquivador
+    - Funções responsáveis pela parte de compressão e descompressão do archiver
 
 main.c:
     - Arquivo master do projeto
@@ -84,6 +84,6 @@ BUGS CONHECIDOS:
     - VALGRIND ERROR:
         - "Syscall param write(buf) points to uninitialised byte(s)"
             Acontece quando tento ler o tamanho de um arquivo que abri para a escrita sem escrever algo nele.
-            Pesquisei bastante e não consegui solucionar, é um problmea interno do SO e aparentemente não 
+            Pesquisei bastante e não consegui solucionar, é um problema interno do SO e aparentemente não 
             afeta o comportamento do programa, nem causa nenhum leak. Ocorre sempre dentro da função file_size.
             Possivelmente só ocorre no ambiente de homologação

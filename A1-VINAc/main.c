@@ -36,13 +36,11 @@ int main(int argc, char **argv) {
 
     // Caso o archiver não exista, ele é criado
     FILE *archiver = fopen(argv[ARCHIVER_POSITION], "r+b");
-
     if (archiver == NULL)
         archiver = fopen(argv[ARCHIVER_POSITION], "w+b");
 
     // Pega a opção do usuário e exclui os args desnecessários
     char option = argv[OPTION_POSITION][OPTION_CHAR];
-
     setup_args(&argv, &argc);
 
     if (has_duplicates(argv, argc))
@@ -67,7 +65,7 @@ int main(int argc, char **argv) {
 
             backup = create_backup(archiver, &backup_name);
 
-            error_code = option_i(archiver, argv, argc, COMPRESS);
+            error_code = option_i(archiver, argv, argc, COMPRESSED);
 
             if (error_code != OK)
                 restore_backup(archiver, &backup, &backup_name);
@@ -107,6 +105,7 @@ int main(int argc, char **argv) {
             break;
     }
 
+    // Ambiente de homologação
     #if HOMOLOG
         if (error_code == OK) {
             option_c(archiver);
