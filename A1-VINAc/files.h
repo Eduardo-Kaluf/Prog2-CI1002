@@ -5,6 +5,7 @@ enum Mode {
     READ_WRITE_UNCOMPRESSED,
     READING_COMPRESSED,
     WRITING_COMPRESSED,
+    READING_AND_OVERWRITTEN_COMPRESSED
 };
 
 // Retorna o tamanho do arquivo

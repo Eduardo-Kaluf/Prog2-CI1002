@@ -114,22 +114,32 @@ void move_and_shift_member(FILE *archiver, struct dir_member_t *member, long off
 }
 
 void read_write(FILE *read_file, FILE *write_file, long bytes_io, int read_offset, int write_offset, int mode, struct dir_member_t *member) {
-    char *member_content = malloc(bytes_io * sizeof(char) * 2);
-    char *compressed_content = malloc(bytes_io * sizeof(char));
-
+    char *member_content = 0;
+    char *compressed_content = 0;
     fseek(read_file, read_offset, SEEK_SET);
+
+    int flag = 0;
+    if (mode == READING_AND_OVERWRITTEN_COMPRESSED) {
+        mode = WRITING_COMPRESSED;
+        flag = 1;
+    }
 
     switch (mode) {
         case READ_WRITE_UNCOMPRESSED:
+            member_content = malloc(bytes_io * sizeof(char) * 2);
+            compressed_content = malloc(bytes_io * sizeof(char) * 2);
+
             fread(member_content, 1, bytes_io, read_file);
             fseek(write_file, write_offset, SEEK_SET);
             fwrite(member_content, 1, bytes_io, write_file);
 
             break;
         case READING_COMPRESSED:
+            compressed_content = malloc(bytes_io);
+            member_content     = malloc(member->original_size);
             if (member == NULL) {
                 log_error(MEMBER_NOT_FOUND, NULL);
-                return;
+                break;
             }
 
             fread(compressed_content, 1, bytes_io, read_file);
@@ -139,13 +149,16 @@ void read_write(FILE *read_file, FILE *write_file, long bytes_io, int read_offse
             fseek(write_file, write_offset, SEEK_SET);
             fwrite(member_content, 1, member->original_size, write_file);
 
-            edit_dir_member(member, DONT_CHANGE, DONT_CHANGE ,DONT_CHANGE);
+            edit_dir_member(member, DONT_CHANGE, OVERWRITE, DONT_CHANGE ,DONT_CHANGE);
 
             break;
         case WRITING_COMPRESSED:
+            member_content = malloc(bytes_io * sizeof(char) * 2);
+            compressed_content = malloc(bytes_io * sizeof(char) * 2);
+
             if (member == NULL) {
                 log_error(MEMBER_NOT_FOUND, NULL);
-                return;
+                break;
             }
 
             fread(member_content, 1, bytes_io, read_file);
@@ -158,11 +171,16 @@ void read_write(FILE *read_file, FILE *write_file, long bytes_io, int read_offse
             // Atualiza a data de modificação e o tamanho do arquivo guardado
             if (compressed_size >= bytes_io) {
                 fwrite(member_content, 1, bytes_io, write_file);
-                edit_dir_member(member, DONT_CHANGE, DONT_CHANGE ,DONT_CHANGE);
+                edit_dir_member(member, DONT_CHANGE, !OVERWRITE, DONT_CHANGE, DONT_CHANGE);
             }
             else {
                 fwrite(compressed_content, 1, compressed_size, write_file);
-                edit_dir_member(member, compressed_size, DONT_CHANGE ,DONT_CHANGE);
+                edit_dir_member(member, compressed_size, !OVERWRITE, DONT_CHANGE, DONT_CHANGE);
+
+                if (flag) {
+                    move_chunks(write_file, write_offset + bytes_io, file_size(write_file), write_offset + compressed_size);
+                    ftruncate(fileno(write_file), file_size(write_file) - (bytes_io - compressed_size));
+                }
             }
 
             break;

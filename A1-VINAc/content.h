@@ -44,6 +44,7 @@ void move_and_shift_member(FILE *archiver, struct dir_member_t *member, long off
 //     - READ_WRITE_UNCOMPRESSED: Realiza a leitura de um arquivo sem compressão e escreve ele da mesma forma;
 //     - READING_COMPRESSED: Realiza a leitura de um membro com compressão e o escreve sem compressão;
 //     - WRITING_COMPRESSED: Realiza a leitura de um membro sem compressão e o escreve com compressão;
+//     - READING_AND_OVERWRITTEN_COMPRESSED: Realiza a leitura de um membro sem compressão e o escreve com compressão em um arquivo que ele já existe;
 // - member: ponteiro para o membro que terá seu tamanho e data de modificação alterados
 void read_write(FILE *read_file, FILE *write_file, long bytes_io, int read_offset, int write_offset, int mode, struct dir_member_t *member);
 

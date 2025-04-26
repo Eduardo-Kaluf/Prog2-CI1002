@@ -25,6 +25,7 @@
 #define DONT_CHANGE -1
 #define FORWARD 1
 #define BACKWARD 0
+#define OVERWRITE 1
 
 // Enumeração de códigos de erro
 enum Errors {

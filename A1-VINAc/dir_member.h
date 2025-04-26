@@ -28,8 +28,9 @@ void log_member(struct dir_member_t *dir_member);
 // Edita as informações de um membro existente no diretório
 // - dir_member: ponteiro para o membro a ser editado
 // - compressed_size: novo tamanho armazenado (DONT_CHANGE caso não possua compressão)
+// - overwrite: OVERWRITE caso queira que o membro receba o espaço guardado como um novo espaço que está em disco
 // - offset: novo offset no arquivo (DONT_CHANGE caso não deva ser alterado)
 // - order: nova posição no diretório (DONT_CHANGE caso não deva ser alterado)
-void edit_dir_member(struct dir_member_t *dir_member, int compressed_size, int offset, int order);
+void edit_dir_member(struct dir_member_t *dir_member, int compressed_size, int overwrite, int offset, int order);
 
 #endif

@@ -87,3 +87,6 @@ BUGS CONHECIDOS:
             Pesquisei bastante e não consegui solucionar, é um problema interno do SO e aparentemente não 
             afeta o comportamento do programa, nem causa nenhum leak. Ocorre sempre dentro da função file_size.
             Possivelmente só ocorre no ambiente de homologação
+    - OTHERS:
+        - Arquivos com mais de 100kb já começam a demorar MUITO para o lz comprimir
+        - Apresentou algumas inconsistências ao realizar operações com arquivos comprimidos. Aparentemente arrumadas. 

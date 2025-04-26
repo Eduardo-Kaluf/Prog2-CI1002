@@ -30,7 +30,7 @@ struct dir_member_t *create_dir_member(char *member_name, int compressed_size, i
     return dir_member;
 }
 
-void edit_dir_member(struct dir_member_t *dir_member, int compressed_size, int offset, int order) {
+void edit_dir_member(struct dir_member_t *dir_member, int compressed_size, int overwrite, int offset, int order) {
     struct stat buf;
 
     stat(dir_member->name, &buf);
@@ -41,14 +41,16 @@ void edit_dir_member(struct dir_member_t *dir_member, int compressed_size, int o
 
     if (compressed_size != DONT_CHANGE)
         dir_member->stored_size = compressed_size;
-    else
-        dir_member->stored_size = dir_member->original_size;
 
     if (order != DONT_CHANGE)
         dir_member->order = order;
 
     if (offset != DONT_CHANGE)
         dir_member->offset = offset;
+
+    if (overwrite == OVERWRITE)
+        dir_member->stored_size = dir_member->original_size;
+
 }
 
 void log_member(struct dir_member_t *dir_member) {

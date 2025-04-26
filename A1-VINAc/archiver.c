@@ -65,11 +65,13 @@ char option_i(FILE *archiver, char **new_members, int append_size, int compress)
             // Conserta dados
             fix_offsets(dir_members, dir_size, -(found->stored_size - member_size), found->order + 1, dir_size);
 
-            edit_dir_member(found, DONT_CHANGE, found->offset, found->order);
+            edit_dir_member(found, DONT_CHANGE, OVERWRITE, found->offset, found->order);
 
             // Inclui o membro no arquiver
-            if (compress)
-                read_write(new_member, archiver, member_size, START_OF_FILE, found->offset, WRITING_COMPRESSED, found);
+            if (compress) {
+                read_write(new_member, archiver, member_size, START_OF_FILE, found->offset, READING_AND_OVERWRITTEN_COMPRESSED, found);
+                fix_offsets(dir_members, dir_size, -(member_size - found->stored_size), found->order + 1, dir_size);
+            }
             else
                 read_write(new_member, archiver, member_size, START_OF_FILE, found->offset, READ_WRITE_UNCOMPRESSED, NULL);
         }
@@ -151,11 +153,11 @@ char option_x(FILE *archiver, char **members_to_extract, int extraction_size) {
 
         // Decide se irá extrair um membro comprimido ou não
         if (extracting->original_size == extracting->stored_size)
-            read_write(archiver, out_file, extracting->stored_size, extracting->offset, 0, READ_WRITE_UNCOMPRESSED, NULL);
+            read_write(archiver, out_file, extracting->stored_size, extracting->offset, START_OF_FILE, READ_WRITE_UNCOMPRESSED, NULL);
         else
-            read_write(archiver, out_file, extracting->stored_size, extracting->offset, 0, READING_COMPRESSED, extracting);
+            read_write(archiver, out_file, extracting->stored_size, extracting->offset, START_OF_FILE, READING_COMPRESSED, extracting);
 
-        edit_dir_member(extracting, DONT_CHANGE, DONT_CHANGE, DONT_CHANGE);
+        edit_dir_member(extracting, DONT_CHANGE, !OVERWRITE, DONT_CHANGE, DONT_CHANGE);
 
         fclose(out_file);
     }
@@ -222,7 +224,7 @@ char option_m(FILE *archiver, char *member_to_move, char *target) {
         fix_order(dir_members, dir_size, dir_target->order + 1, dir_member_to_move->order, 1);
     }
 
-    edit_dir_member(dir_member_to_move, DONT_CHANGE, target_end, dir_target->order + 1);
+    edit_dir_member(dir_member_to_move, DONT_CHANGE, !OVERWRITE, target_end, dir_target->order + 1);
 
     // Atualiza o diretório do archiver
     write_directory(archiver, dir_members, dir_size, 0);
