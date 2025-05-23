@@ -35,7 +35,6 @@ void edit_dir_member(struct dir_member_t *dir_member, int compressed_size, int o
 
     stat(dir_member->name, &buf);
 
-    dir_member->original_size = buf.st_size;
     dir_member->uid = buf.st_uid;
     dir_member->last_modification = buf.st_mtime;
 
@@ -48,8 +47,10 @@ void edit_dir_member(struct dir_member_t *dir_member, int compressed_size, int o
     if (offset != DONT_CHANGE)
         dir_member->offset = offset;
 
-    if (overwrite == OVERWRITE)
+    if (overwrite == OVERWRITE) {
+        dir_member->original_size = buf.st_size;
         dir_member->stored_size = dir_member->original_size;
+    }
 
 }
 
