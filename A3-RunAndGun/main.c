@@ -8,6 +8,7 @@
 #include "player.h"
 #include "utils.h"
 
+
 int GRAVITY = 30;
 
 void must_init(bool test, const char *description)
@@ -20,24 +21,22 @@ void must_init(bool test, const char *description)
 
 void update_position(struct player *player) {
 
-	if (player->entity->y + player->entity->height / 2 < GROUND && !player->joystick->up)
-		move_player(player, 1, 3, DISP_W, DISP_H);
 
 	if (player->joystick->left)
-		move_player(player, 1, 0, DISP_W, DISP_H);
+		move_player(player, 1, LEFT, DISP_W, DISP_H);
 
 	if (player->joystick->right)
-		move_player(player, 1, 1, DISP_W, DISP_H);
+		move_player(player, 1, RIGHT, DISP_W, DISP_H);
 
 	if (player->joystick->up)
-		move_player(player, 2, 2, DISP_W, DISP_H);
+		move_player(player, 2, UP, DISP_W, DISP_H);
 
-	// if (player->joystick->down)
-	// 	crouch(player);
+	if (player->entity->y + player->entity->height / 2 < GROUND && !player->joystick->up)
+		move_player(player, 1, DOWN, DISP_W, DISP_H);
+
 }
 
-int main()
-{
+int main() {
     al_init();
     al_init_primitives_addon();
 	al_init_image_addon();
@@ -94,20 +93,26 @@ int main()
 
 			al_flip_display();
 		}
-        else if ((event.type == ALLEGRO_EVENT_KEY_DOWN) || (event.type == ALLEGRO_EVENT_KEY_UP)) {
-			if (event.keyboard.keycode == 1)
+        else if (event.type == ALLEGRO_EVENT_KEY_DOWN || event.type == ALLEGRO_EVENT_KEY_UP) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_A) {
 				joystick_left(player->joystick);
-			else if (event.keyboard.keycode == 4)
-				joystick_right(player->joystick);
+			}
 
-        	if (event.keyboard.keycode == 19)
+        	if (event.keyboard.keycode == ALLEGRO_KEY_D) {
+				joystick_right(player->joystick);
+			}
+
+        	if (event.keyboard.keycode == ALLEGRO_KEY_S) {
         		joystick_down(player->joystick);
 
-			if (player->entity->height / 2 + player->entity->y == GROUND && event.keyboard.keycode == 23 && event.type == ALLEGRO_EVENT_KEY_DOWN) {
+        	}
+
+			if (player->entity->height / 2 + player->entity->y == GROUND && event.keyboard.keycode == ALLEGRO_KEY_W && event.type == ALLEGRO_EVENT_KEY_DOWN) {
 				player->joystick->up = 1;
 			}
 		}
-		else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) break;
+		else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+			break;
 	}
 
     al_destroy_font(font);

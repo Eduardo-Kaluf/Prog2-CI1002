@@ -1,7 +1,11 @@
 #ifndef __ENTITY__ 																											
 #define __ENTITY__
+
 #include <allegro5/bitmap.h>
-#include "player.h"
+
+
+// Using forward declaration
+struct player;
 
 struct entity {
     int width;
@@ -18,6 +22,6 @@ struct entity *create_entity(int width, int height, int x, int y, int dx, int dy
 
 void destroy_entity(struct entity *element);
 
-void move_background(struct entity *bg, struct player *player);
+void move_background(struct entity *bg, struct player *main_player);
 
 #endif

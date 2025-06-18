@@ -1,6 +1,8 @@
 #include <stdlib.h>
+
 #include "player.h"
 #include "utils.h"
+
 
 struct player* create_player(int width, int height, int x, int y, int dx, int dy, ALLEGRO_BITMAP* spritesheet) {
 
@@ -11,22 +13,22 @@ struct player* create_player(int width, int height, int x, int y, int dx, int dy
 	return new_player;
 }
 
-void move_player(struct player *element, int steps, int trajectory, int max_x, int max_y) {
+void move_player(struct player *element, int steps, enum Directions trajectory, int max_x, int max_y) {
 
-	if (!trajectory) {
+	if (trajectory == LEFT) {
 		if ((element->entity->x - steps*PLAYER_STEP) - element->entity->width/2 >= 0)
 			element->entity->x = element->entity->x - steps*PLAYER_STEP;
 	}
-	else if (trajectory == 1) {
+	else if (trajectory == RIGHT) {
 		if ((element->entity->x + steps*PLAYER_STEP) + element->entity->width/2 <= max_x)
 			element->entity->x = element->entity->x + steps*PLAYER_STEP;
 	}
-	else if (trajectory == 2) {
+	else if (trajectory == UP) {
 		if ((element->entity->y - steps*PLAYER_STEP) - element->entity->width/2 >= 0)
 			element->entity->y = element->entity->y - steps*PLAYER_STEP;
 	}
 
-	else if (trajectory == 3) {
+	else if (trajectory == DOWN) {
 		if ((element->entity->y + steps*PLAYER_STEP) + element->entity->width/2 < max_y)
 			element->entity->y = element->entity->y + steps*PLAYER_STEP;
 		else
@@ -34,13 +36,11 @@ void move_player(struct player *element, int steps, int trajectory, int max_x, i
 	}
 }
 
-void destroy_player(struct player *element) {
-	free(element);
-}
+
 
 void jump(struct player *element) {
 
-    if (element->entity->y <= GROUND - 200) {
+    if (element->entity->y <= GROUND - 250) {
         element->joystick->up = 0;
     }
 
@@ -51,14 +51,14 @@ int get_player_sprite(struct player *element) {
 		return 3;
 	if (element->joystick->down)
 		return 4;
+	if (element->joystick->right && element->joystick->left)
+		return 0;
 	if (element->joystick->right || element->joystick->left)
 		return 1;
 
 	return 0;
 }
 
-
-
-// void crouch(struct player *element) {
-
-// }
+void destroy_player(struct player *element) {
+	free(element);
+}

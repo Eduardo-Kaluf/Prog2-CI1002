@@ -1,5 +1,7 @@
 #include <stdlib.h>
+
 #include "joystick.h"
+
 
 struct joystick* joystick_create() {				
 	struct joystick *element = malloc (sizeof(struct joystick));
@@ -13,14 +15,27 @@ struct joystick* joystick_create() {
 	return element;																
 }
 
-void joystick_destroy(struct joystick *element){ free(element);}							
 
-void joystick_left(struct joystick *element){ element->left = element->left ^ 1;}			
+void joystick_left(struct joystick *element) {
+	element->left = element->left ^ 1;
+}
 
-void joystick_right(struct joystick *element){ element->right = element->right ^ 1;}		
+void joystick_right(struct joystick *element) {
+	element->right = element->right ^ 1;
+}
 
-void joystick_up(struct joystick *element){ element->up = element->up ^ 1;}			
+void joystick_up(struct joystick *element) {
+	element->up = element->up ^ 1;
+}
 
-void joystick_down(struct joystick *element){ element->down = element->down ^ 1;}		
+void joystick_down(struct joystick *element) {
+	element->down = element->down ^ 1;
+}
 
-void joystick_fire(struct joystick *element){ element->fire = element->fire ^ 1;}
+void joystick_fire(struct joystick *element) {
+	element->fire = element->fire ^ 1;
+}
+
+void joystick_destroy(struct joystick *element) {
+	free(element);
+}
