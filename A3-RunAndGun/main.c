@@ -5,6 +5,17 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 
+#include "player.h"
+#include "utils.h"
+#include "bg.h"
+
+int GRAVITY = 20;
+
+#define SPRITE_W 150
+#define SPRITE_H 180
+#define X_VELOCITY 1
+#define Y_VELOCITY 1
+
 void must_init(bool test, const char *description)
 {
     if(test) return;
@@ -13,178 +24,84 @@ void must_init(bool test, const char *description)
     exit(1);
 }
 
-enum BOUNCER_TYPE {
-    BT_HELLO = 0,
-    BT_MYSHA,
-    BT_TRIANGLE,
-    BT_RECTANGLE_1,
-    BT_RECTANGLE_2,
-    BT_CIRCLE,
-    BT_LINE1,
-    BT_LINE2,
-    BT_N
-};
+void update_position(struct player *player) {
 
-typedef struct BOUNCER
-{
-    float x, y;
-    float dx, dy;
-    int type;
-} BOUNCER;
+	if ((player->entity->y + player->entity->height / 2 < GROUND) && !(player->joystick->up)) {
+		move_player(player, 1, 3, DISP_W, DISP_H);
+	}
+
+	if (player->joystick->left)
+		move_player(player, 1, 0, DISP_W, DISP_H);
+
+	if (player->joystick->right)
+		move_player(player, 1, 1, DISP_W, DISP_H);
+
+	if (player->joystick->up)																																						
+		move_player(player, 2, 2, DISP_W, DISP_H);
+
+	// if (player->joystick->down)
+	// 	crouch(player);
+}
 
 int main()
 {
-    must_init(al_init(), "allegro");
-    must_init(al_install_keyboard(), "keyboard");
+    al_init();
+    al_init_primitives_addon();
+	al_init_image_addon();
+	al_install_keyboard();
 
-    ALLEGRO_TIMER* timer = al_create_timer(1.0 / 30.0);
-    must_init(timer, "timer");
+	ALLEGRO_TIMER* timer = al_create_timer(1.0 / 30.0);
+	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
+	ALLEGRO_FONT* font = al_create_builtin_font();
+	ALLEGRO_DISPLAY* disp = al_create_display(DISP_W, DISP_H);
+	ALLEGRO_EVENT event;
 
-    ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
-    must_init(queue, "queue");
+	al_register_event_source(queue, al_get_keyboard_event_source());
+	al_register_event_source(queue, al_get_display_event_source(disp));
+	al_register_event_source(queue, al_get_timer_event_source(timer));
 
-    al_set_new_display_option(ALLEGRO_SAMPLE_BUFFERS, 1, ALLEGRO_SUGGEST);
-    al_set_new_display_option(ALLEGRO_SAMPLES, 8, ALLEGRO_SUGGEST);
-    al_set_new_bitmap_flags(ALLEGRO_MIN_LINEAR | ALLEGRO_MAG_LINEAR);
+	struct entity *bg = create_entity(7350, 720, 0, 0, 0, 0, al_load_bitmap("sprites/bg.png"));
 
-    ALLEGRO_DISPLAY* disp = al_create_display(640, 480);
-    must_init(disp, "display");
+	ALLEGRO_BITMAP* bunny = al_load_bitmap("sprites/bunny.png");
+	struct player* player = create_player(SPRITE_W, SPRITE_H, 10, 300, X_VELOCITY, Y_VELOCITY, bunny);
 
-    ALLEGRO_FONT* font = al_create_builtin_font();
-    must_init(font, "font");
+	al_start_timer(timer);
+	while(1) {
+		al_wait_for_event(queue, &event);
+		
+		if (event.type == ALLEGRO_EVENT_TIMER) {
+			jump(player);
 
-    must_init(al_init_image_addon(), "image addon");
-    ALLEGRO_BITMAP* mysha = al_load_bitmap("mysha.png");
-    must_init(mysha, "mysha");
+			move_background(bg, player);
 
-    must_init(al_init_primitives_addon(), "primitives");
+			update_position(player);
 
-    al_register_event_source(queue, al_get_keyboard_event_source());
-    al_register_event_source(queue, al_get_display_event_source(disp));
-    al_register_event_source(queue, al_get_timer_event_source(timer));
+			al_draw_tinted_scaled_rotated_bitmap_region(bg, bg->x, bg->y, bg->width, bg->height, al_map_rgba(255, 255, 255, 255),
+														0, 0, 0, 0, 1, 1, 0, 0);
 
-    bool done = false;
-    bool redraw = true;
-    ALLEGRO_EVENT event;
 
-    BOUNCER obj[BT_N];
-    for(int i = 0; i < BT_N; i++)
-    {
-        BOUNCER* b = &obj[i];
-        b->x = rand() % 640;
-        b->y = rand() % 480;
-        b->dx = ((((float)rand()) / RAND_MAX) - 0.5) * 2 * 4;
-        b->dy = ((((float)rand()) / RAND_MAX) - 0.5) * 2 * 4;
-        b->type = i;
-    }
+			al_draw_tinted_scaled_rotated_bitmap_region(player->entity->spritesheet, 0, 0, SPRITE_W, SPRITE_H, al_map_rgba(255, 255, 255, 255),
+												        SPRITE_W / 2, SPRITE_H / 2, player->entity->x, player->entity->y, 0.5, 0.5, 0, 0);
 
-    al_start_timer(timer);
-    while(1)
-    {
-        al_wait_for_event(queue, &event);
+			al_flip_display();
+		}
+        else if ((event.type == ALLEGRO_EVENT_KEY_DOWN) || (event.type == ALLEGRO_EVENT_KEY_UP)) {
+			if (event.keyboard.keycode == 1) {joystick_left(player->joystick);}
+			else if (event.keyboard.keycode == 4) {joystick_right(player->joystick);}
 
-        switch(event.type)
-        {
-            case ALLEGRO_EVENT_TIMER:
-                for(int i = 0; i < BT_N; i++)
-                {
-                    BOUNCER* b = &obj[i];
-                    b->x += b->dx;
-                    b->y += b->dy;
+			if (player->entity->height / 2 + player->entity->y == GROUND && event.keyboard.keycode == 23 && event.type == ALLEGRO_EVENT_KEY_DOWN) {
+				player->joystick->up = 1;
+			}
+		}
+		else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) break;
+	}
 
-                    if(b->x < 0)
-                    {
-                        b->x  *= -1;
-                        b->dx *= -1;
-                    }
-                    if(b->x > 640)
-                    {
-                        b->x = 2*640 - b->x;
-                        b->dx *= -1;
-                    }
-                    if(b->y < 0)
-                    {
-                        b->y  *= -1;
-                        b->dy *= -1;
-                    }
-                    if(b->y > 480)
-                    {
-                        b->y = 2*480 - b->y;
-                        b->dy *= -1;
-                    }
-                }
-
-                redraw = true;
-                break;
-
-            case ALLEGRO_EVENT_KEY_DOWN:
-            case ALLEGRO_EVENT_DISPLAY_CLOSE:
-                done = true;
-                break;
-        }
-
-        if(done)
-            break;
-
-        if(redraw && al_is_event_queue_empty(queue))
-        {
-            ALLEGRO_VERTEX v[4];
-            al_clear_to_color(al_map_rgb(0, 0, 0));
-
-            for(int i = 0; i < BT_N; i++)
-            {
-                BOUNCER* b = &obj[i];
-                switch(b->type)
-                {
-                    case BT_HELLO:
-                        al_draw_text(font, al_map_rgb(255, 255, 255), b->x, b->y, 0, "Hello world!");
-                        break;
-
-                    case BT_MYSHA:
-                        al_draw_bitmap(mysha, b->x, b->y, 0);
-                        break;
-
-                    case BT_TRIANGLE:
-                        al_draw_filled_triangle(b->x, b->y, b->x + 50, b->y + 25, b->x, b->y + 50, al_map_rgb_f(0, 1, 0));
-                        break;
-
-                    case BT_RECTANGLE_1:
-                        al_draw_filled_rectangle(b->x, b->y, b->x + 100, b->y + 80, al_map_rgba_f(0, 0, 0.5, 0.5));
-                        break;
-
-                    case BT_RECTANGLE_2:
-                        v[0].x = b->x;       v[0].y = b->y;       v[0].z = 0; v[0].color = al_map_rgb_f(1, 0, 0);
-                        v[1].x = b->x + 120; v[1].y = b->y;       v[1].z = 0; v[1].color = al_map_rgb_f(0, 1, 0);
-                        v[2].x = b->x;       v[2].y = b->y + 100; v[2].z = 0; v[2].color = al_map_rgb_f(0, 0, 1);
-                        v[3].x = b->x + 120; v[3].y = b->y + 100; v[3].z = 0; v[3].color = al_map_rgb_f(1, 1, 0);
-
-                        al_draw_prim(v, NULL, NULL, 0, 4, ALLEGRO_PRIM_TRIANGLE_STRIP);
-                        break;
-
-                    case BT_CIRCLE:
-                        al_draw_circle(b->x, b->y, 30, al_map_rgb_f(1, 0, 1), 2);
-                        break;
-
-                    case BT_LINE1:
-                        al_draw_line(b->x, b->y, b->x + 20, b->y + 100, al_map_rgb_f(1, 0, 0), 1);
-                        break;
-
-                    case BT_LINE2:
-                        al_draw_line(b->x, b->y, b->x + 70, b->y - 20, al_map_rgb_f(1, 1, 0), 1);
-                        break;
-                }
-            }
-
-            al_flip_display();
-            redraw = false;
-        }
-    }
-
-    al_destroy_bitmap(mysha);
     al_destroy_font(font);
-    al_destroy_display(disp);
-    al_destroy_timer(timer);
-    al_destroy_event_queue(queue);
+	al_destroy_display(disp);
+	al_destroy_timer(timer);
+	al_destroy_event_queue(queue);
+    //CONMSERTAR DESTROY
+    destroy_player(player);
 
     return 0;
 }
