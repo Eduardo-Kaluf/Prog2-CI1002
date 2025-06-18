@@ -1,6 +1,9 @@
 #include <stdlib.h>
 
 #include "player.h"
+
+#include <allegro5/timer.h>
+
 #include "utils.h"
 
 
@@ -46,7 +49,16 @@ void jump(struct player *element) {
 
 }
 
-int get_player_sprite(struct player *element) {
+int get_player_sprite(struct player *element, int *foot, int *side, ALLEGRO_TIMER *timer) {
+
+	if ((int) al_get_timer_count(timer) % 12 == 0)
+		*foot = !(*foot);
+
+	if (element->joystick->right)
+		*side = 0;
+	else if (element->joystick->left)
+		*side = 1;
+
 	if (element->joystick->up)
 		return 3;
 	if (element->joystick->down)
@@ -54,7 +66,7 @@ int get_player_sprite(struct player *element) {
 	if (element->joystick->right && element->joystick->left)
 		return 0;
 	if (element->joystick->right || element->joystick->left)
-		return 1;
+		return 1 + *foot;
 
 	return 0;
 }

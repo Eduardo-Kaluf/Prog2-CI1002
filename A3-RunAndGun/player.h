@@ -2,6 +2,7 @@
 #define __PLAYER__																											
 
 #include <allegro5/bitmap.h>
+#include <allegro5/timer.h>
 
 #include "entity.h"
 #include "joystick.h"
@@ -22,7 +23,7 @@ void jump(struct player *element);
 
 void crouch(struct player *element);
 
-int get_player_sprite(struct player *element);
+int get_player_sprite(struct player *element, int *foot, int *side, ALLEGRO_TIMER *timer);
 
 void destroy_player(struct player *element);
 

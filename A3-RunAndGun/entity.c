@@ -17,10 +17,12 @@ struct entity *create_entity(int width, int height, int x, int y, int dx, int dy
 }
 
 void move_background(struct entity *bg, struct player *main_player) {
-    if (main_player->entity->x + main_player->entity->width / 2 + PLAYER_STEP >= DISP_W && bg->x + DISP_W < bg->width)
-        bg->x += 2*PLAYER_STEP;
-    if (main_player->entity->x - main_player->entity->width / 2 - PLAYER_STEP <= 0 && bg->x > PLAYER_STEP)
-        bg->x -= 2*PLAYER_STEP;
+    if (main_player->joystick->right || main_player->joystick->left) {
+        if (main_player->entity->x + main_player->entity->width / 2 + PLAYER_STEP >= DISP_W && bg->x + DISP_W < bg->width)
+            bg->x += 2*PLAYER_STEP;
+        if (main_player->entity->x - main_player->entity->width / 2 - PLAYER_STEP <= 0 && bg->x > PLAYER_STEP)
+            bg->x -= 2*PLAYER_STEP;
+    }
 }
 
 void destroy_entity(struct entity *element) {

@@ -20,8 +20,6 @@ void must_init(bool test, const char *description)
 }
 
 void update_position(struct player *player) {
-
-
 	if (player->joystick->left)
 		move_player(player, 1, LEFT, DISP_W, DISP_H);
 
@@ -60,6 +58,7 @@ int main() {
 	al_start_timer(timer);
 	int side = 0;
 	int foot = 0;
+	int current_sprite = 0;
 	while(1) {
 		al_wait_for_event(queue, &event);
 
@@ -68,21 +67,9 @@ int main() {
 
 			update_position(player);
 
-			if (player->joystick->right || player->joystick->left)
-				move_background(bg, player);
+			move_background(bg, player);
 
-			int current_sprite = get_player_sprite(player);
-
-			if ((int) al_get_timer_count(timer) % 12 == 0)
-				foot = !foot;
-
-			if (current_sprite == 1)
-				current_sprite += foot;
-
-			if (player->joystick->right)
-				side = 0;
-			else if (player->joystick->left)
-				side = 1;
+			current_sprite = get_player_sprite(player, &foot, &side, timer);
 
 
 			al_draw_tinted_scaled_rotated_bitmap_region(bg->spritesheet, bg->x, bg->y, bg->width, bg->height, al_map_rgba(255, 255, 255, 255),
