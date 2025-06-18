@@ -1,6 +1,7 @@
 #ifndef __ENTITY__ 																											
 #define __ENTITY__
 #include <allegro5/bitmap.h>
+#include "player.h"
 
 struct entity {
     int width;

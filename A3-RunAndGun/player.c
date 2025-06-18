@@ -17,9 +17,21 @@ void move_player(struct player *element, int steps, int trajectory, int max_x, i
 		if ((element->entity->x - steps*PLAYER_STEP) - element->entity->width/2 >= 0)
 			element->entity->x = element->entity->x - steps*PLAYER_STEP;
 	}
-	else if (trajectory == 1){ if ((element->entity->x + steps*PLAYER_STEP) + element->entity->width/2 <= max_x) element->entity->x = element->entity->x + steps*PLAYER_STEP;}	
-	else if (trajectory == 2){ if ((element->entity->y - steps*PLAYER_STEP) - element->entity->width/2 >= 0) element->entity->y = element->entity->y - steps*PLAYER_STEP;}	
-	else if (trajectory == 3){ if ((element->entity->y + steps*PLAYER_STEP) + element->entity->width/2 <= max_y) element->entity->y = element->entity->y + steps*PLAYER_STEP;}
+	else if (trajectory == 1) {
+		if ((element->entity->x + steps*PLAYER_STEP) + element->entity->width/2 <= max_x)
+			element->entity->x = element->entity->x + steps*PLAYER_STEP;
+	}
+	else if (trajectory == 2) {
+		if ((element->entity->y - steps*PLAYER_STEP) - element->entity->width/2 >= 0)
+			element->entity->y = element->entity->y - steps*PLAYER_STEP;
+	}
+
+	else if (trajectory == 3) {
+		if ((element->entity->y + steps*PLAYER_STEP) + element->entity->width/2 < max_y)
+			element->entity->y = element->entity->y + steps*PLAYER_STEP;
+		else
+			element->entity->y = GROUND;
+	}
 }
 
 void destroy_player(struct player *element) {
@@ -33,6 +45,19 @@ void jump(struct player *element) {
     }
 
 }
+
+int get_player_sprite(struct player *element) {
+	if (element->joystick->up)
+		return 3;
+	if (element->joystick->down)
+		return 4;
+	if (element->joystick->right || element->joystick->left)
+		return 1;
+
+	return 0;
+}
+
+
 
 // void crouch(struct player *element) {
 

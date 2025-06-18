@@ -21,12 +21,8 @@ void destroy_entity(struct entity *element) {
 }
 
 void move_background(struct entity *bg, struct player *player) {
-    if (player->entity->x + player->entity->width / 2 >= bg->x + DISP_W) {
-        bg->x += PLAYER_STEP;
-        player->entity->x -= 10;
-    }
-    if (player->entity->x - player->entity->width / 2 <= bg->x) {
-        bg->x -= PLAYER_STEP;
-        player->entity->x += 10;
-    }
+    if (player->entity->x + player->entity->width / 2 + PLAYER_STEP >= DISP_W && bg->x + DISP_W < bg->width)
+        bg->x += 2*PLAYER_STEP;
+    if (player->entity->x - player->entity->width / 2 - PLAYER_STEP <= 0 && bg->x > PLAYER_STEP)
+        bg->x -= 2*PLAYER_STEP;
 }

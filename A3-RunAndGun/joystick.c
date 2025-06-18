@@ -2,14 +2,14 @@
 #include "joystick.h"
 
 struct joystick* joystick_create() {				
+	struct joystick *element = malloc (sizeof(struct joystick));
 
-	struct joystick *element = (struct joystick*) malloc (sizeof(struct joystick));				
-	if (!element) return NULL;												
 	element->right = 0;
 	element->left = 0;
 	element->up = 0;
 	element->down = 0;
 	element->fire = 0;
+
 	return element;																
 }
 

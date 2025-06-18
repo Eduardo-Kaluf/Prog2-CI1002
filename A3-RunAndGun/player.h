@@ -19,5 +19,6 @@ void move_player(struct player *element, int steps, int trajectory, int max_x, i
 void destroy_player(struct player *element);
 void jump(struct player *element);
 void crouch(struct player *element);
+int get_player_sprite(struct player *element);
 
 #endif
