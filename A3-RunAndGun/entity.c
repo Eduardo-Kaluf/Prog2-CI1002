@@ -12,6 +12,7 @@ struct entity *create_entity(int width, int height, int x, int y, int dx, int dy
     entity->dy = dy;
     entity->x = x;
     entity->y = y;
+    entity->jumping = 0;
 
     return entity;
 }

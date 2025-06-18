@@ -13,6 +13,7 @@ struct player {
     struct joystick *joystick;
     struct entity *entity;
     int jumping;
+    int shot_time;
 };
 
 struct player* create_player(int width, int height, int x, int y, int dx, int dy, ALLEGRO_BITMAP* spritesheet);

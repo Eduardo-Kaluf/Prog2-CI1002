@@ -15,6 +15,7 @@ struct entity {
     int dx;
     int dy;
     int life;
+	int jumping;
 	ALLEGRO_BITMAP* spritesheet;
 };
 

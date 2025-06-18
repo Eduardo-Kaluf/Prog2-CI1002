@@ -12,6 +12,7 @@ struct player* create_player(int width, int height, int x, int y, int dx, int dy
 	struct player *new_player = malloc(sizeof(struct player));
     new_player->entity = create_entity(width, height, x, y, dx, dy, spritesheet);
 	new_player->joystick = joystick_create();
+	new_player->shot_time = 0;
 
 	return new_player;
 }
@@ -44,7 +45,7 @@ void move_player(struct player *element, int steps, enum Directions trajectory, 
 void jump(struct player *element) {
 
     if (element->entity->y <= GROUND - 250) {
-        element->joystick->up = 0;
+        element->entity->jumping = 0;
     }
 
 }
@@ -59,8 +60,10 @@ int get_player_sprite(struct player *element, int *foot, int *side, ALLEGRO_TIME
 	else if (element->joystick->left)
 		*side = 1;
 
-	if (element->joystick->up)
+	if (element->entity->jumping)
 		return 3;
+	if (element->joystick->fire)
+		return 5;
 	if (element->joystick->down)
 		return 4;
 	if (element->joystick->right && element->joystick->left)

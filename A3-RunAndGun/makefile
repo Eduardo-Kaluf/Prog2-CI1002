@@ -26,7 +26,7 @@ CFLAGS = -g -std=c17 -Wall -Wextra -MMD -MP $(shell pkg-config --cflags allegro-
 
 # Linker flags:
 # `pkg-config`: Provides the correct library linking flags for Allegro
-LDFLAGS = $(shell pkg-config --libs allegro-5 allegro_font-5 allegro_image-5 allegro_primitives-5)
+LDFLAGS = $(shell pkg-config --libs allegro-5 allegro_font-5 allegro_image-5 allegro_primitives-5 allegro_ttf-5)
 
 # The default target, called when you just run `make`
 all: $(TARGET)
