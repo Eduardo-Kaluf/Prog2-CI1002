@@ -102,39 +102,46 @@ void shots_update() {
     }
 }
 
-// char shots_collide(char ship, int x, int y, int w, int h)
-// {
-//     for(int i = 0; i < SHOTS_N; i++)
-//     {
-//         if(!shots[i].used)
-//             continue;
-//
-//         // don't collide with one's own shots
-//         if(shots[i].ship == ship)
-//             continue;
-//
-//         int sw, sh;
-//         if(ship)
-//         {
-//             sw = ALIEN_SHOT_W;
-//             sh = ALIEN_SHOT_H;
-//         }
-//         else
-//         {
-//             sw = SHIP_SHOT_W;
-//             sh = SHIP_SHOT_H;
-//         }
-//
-//         if(collide(x, y, x+w, y+h, shots[i].x, shots[i].y, shots[i].x+sw, shots[i].y+sh))
-//         {
-//             fx_add(true, shots[i].x + (sw / 2), shots[i].y + (sh / 2));
-//             shots[i].used = false;
-//             return true;
-//         }
-//     }
-//
-//     return false;
-// }
+int collide(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2) {
+    if(ax1 > bx2) return 0;
+    if(ax2 < bx1) return 0;
+    if(ay1 > by2) return 0;
+    if(ay2 < by1) return 0;
+
+    return 1;
+}
+
+char shots_collide(char ship, int x, int y, int w, int h)
+{
+    for(int i = 0; i < SHOTS_N; i++)
+    {
+        if(!shots[i].used)
+            continue;
+
+        if(shots[i].ship == ship)
+            continue;
+
+        int sw, sh;
+        if(ship)
+        {
+            sw = 35;
+            sh = 12;
+        }
+        else
+        {
+            sw = SHIP_SHOT_W;
+            sh = SHIP_SHOT_H;
+        }
+
+        if(collide(x, y, x+w, y+h, shots[i].x, shots[i].y, shots[i].x+sw, shots[i].y+sh))
+        {
+            shots[i].used = 0;
+            return 1;
+        }
+    }
+
+    return 0;
+}
 
 void shots_draw(ALLEGRO_BITMAP* snowBall, ALLEGRO_BITMAP* spike) {
     for(int i = 0; i < SHOTS_N; i++) {

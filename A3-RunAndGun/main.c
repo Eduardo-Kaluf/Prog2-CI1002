@@ -21,6 +21,11 @@ void must_init(bool test, const char *description) {
     exit(1);
 }
 
+int between(int lo, int hi)
+{
+	return lo + (rand() % (hi - lo));
+}
+
 void display_menu(ALLEGRO_FONT **fonts) {
 	al_clear_to_color(al_map_rgb(0, 0, 0));
 
@@ -29,7 +34,16 @@ void display_menu(ALLEGRO_FONT **fonts) {
 	al_draw_text(fonts[2], al_map_rgb_f(255,1,1), DISP_W / 2, DISP_H / 6, ALLEGRO_ALIGN_CENTER, "SNOWY MOIR");
 }
 
+void display_game_over(ALLEGRO_FONT **fonts) {
+	al_clear_to_color(al_map_rgb(0, 0, 0));
+
+	al_draw_text(fonts[2], al_map_rgb_f(255,1,1), DISP_W / 2, DISP_H / 2, ALLEGRO_ALIGN_CENTER, "GAME OVER");
+}
+
 void update_position(struct player *player) {
+
+	if(shots_collide(true, player->entity->x, player->entity->y, player->entity->width - 135, player->entity->height))
+		player->entity->health--;
 
 	if (player->joystick->left)
 		move_player(player, 1, LEFT, DISP_W, DISP_H);
@@ -45,6 +59,11 @@ void update_position(struct player *player) {
 }
 
 void update_enemy_position(struct entity *enemy, int player_x, ALLEGRO_TIMER* timer) {
+	if (shots_collide(false, enemy->x, enemy->y, enemy->width, enemy->height))
+		enemy->health--;
+	if (enemy->health <= 0)
+		enemy->x = -100;
+
 	enum Directions trajectory = get_fox_direction(timer);
 
 	if (abs(enemy->x - player_x) <= 300)
@@ -58,6 +77,20 @@ void update_enemy_position(struct entity *enemy, int player_x, ALLEGRO_TIMER* ti
 			enemy->x = enemy->x + PLAYER_STEP / 2;
 	}
 }
+
+
+extern enum Directions movement_2[10] = {NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE};
+
+int get_boss_sprite(struct entity *enemy) {
+	if (enemy->jumping == 1)
+		return 1;
+
+	if (enemy->shot_time / 20 <= 0)
+		return 2;
+
+	return 0;
+}
+
 
 int main() {
     al_init();
@@ -77,6 +110,7 @@ int main() {
 	ALLEGRO_BITMAP* cupcake = al_load_bitmap("sprites/bunny.png");
 	ALLEGRO_BITMAP* fox = al_load_bitmap("sprites/fox.png");
 	ALLEGRO_BITMAP* spike = al_load_bitmap("sprites/spike.png");
+	ALLEGRO_BITMAP* bear = al_load_bitmap("sprites/boss.png");
 
 	ALLEGRO_FONT* fonts[3] = {focused_font, normal_font, title_font};
 
@@ -87,9 +121,11 @@ int main() {
 	struct player* player = create_player(SPRITE_W, SPRITE_H, 100, 300, X_VELOCITY, Y_VELOCITY, cupcake);
 	struct entity *bg = create_entity(7350, 720, 0, 0, 0, 0, al_load_bitmap("sprites/bg.png"));
 	struct entity* enemies[6];
+	struct entity *boss = create_entity(750, 350, 500, 300, X_VELOCITY, Y_VELOCITY, bear);
+	boss->in_range = 1;
 
 	for (int i = 1; i < 7; i++)
-		enemies[i - 1] = create_entity(FOX_W, FOX_H, 500 * i, GROUND, X_VELOCITY, Y_VELOCITY, fox);
+		enemies[i - 1] = create_entity(FOX_W, FOX_H, 750 * i, GROUND - 60, X_VELOCITY, Y_VELOCITY, fox);
 	int player_sprite = 0;
 	al_start_timer(timer);
 	while (1) {
@@ -102,6 +138,11 @@ int main() {
 				shots_update();
 
 				update_position(player);
+
+				if (player->entity->health <= 0) {
+					start = 0;
+					continue;
+				}
 
 				for (int i = 0; i < 6; i++)
 					update_enemy_position(enemies[i], player->entity->x, timer);
@@ -120,18 +161,36 @@ int main() {
 				player_sprite = get_player_sprite(player, timer);
 				al_draw_tinted_scaled_rotated_bitmap_region(player->entity->spritesheet, player_sprite * SPRITE_W, 0, SPRITE_W, SPRITE_H, al_map_rgba(255, 255, 255, 255),
 															SPRITE_W / 2, SPRITE_H / 2, player->entity->x, player->entity->y, 0.8, 0.8, 0, player->entity->side * ALLEGRO_FLIP_HORIZONTAL);
-			}
-			else
-				display_menu(fonts);
 
-			for (int i = 0; i < 6; i++) {
-				if (enemies[i]->shot_time)
-					enemies[i]->shot_time--;
-				else if (enemies[i]->in_range) {
-					int x = enemies[i]->x + (enemies[i]->width / 2);
-					if (shots_add(NULL, enemies[i], enemies[i]->side, false, x, enemies[i]->y))
-						enemies[i]->shot_time = 30;
+				al_draw_tinted_scaled_rotated_bitmap_region(boss->spritesheet, get_boss_sprite(boss) * 250, 0, 250, 350, al_map_rgba(255, 255, 255, 255),
+															250 / 2, 350 / 2, boss->x, boss->y, 1, 1, 0, 0);
+
+
+				for (int i = 0; i < 6; i++) {
+					if (enemies[i]->shot_time)
+						enemies[i]->shot_time--;
+					else if (enemies[i]->in_range) {
+						int x = enemies[i]->x + (enemies[i]->width / 2);
+						if (shots_add(NULL, enemies[i], enemies[i]->side, false, x, enemies[i]->y))
+							enemies[i]->shot_time = 30;
+					}
 				}
+
+				if (boss->shot_time)
+					boss->shot_time--;
+				else {
+					int x = boss->x - 250 / 2;
+					if (shots_add(NULL, boss, LEFT, false, x, boss->y))
+						boss->shot_time = 80;
+				}
+
+			}
+			else {
+				if (player->entity->health <= 0)
+					display_game_over(fonts);
+				else
+					display_menu(fonts);
+
 			}
 
 			al_flip_display();
@@ -154,6 +213,9 @@ int main() {
 
 	        if (key == ALLEGRO_KEY_SPACE)
         		joystick_fire(player->joystick);
+
+			if (key == ALLEGRO_KEY_ENTER && player->entity->health <= 0)
+				break;
 
 	        if (key == ALLEGRO_KEY_ENTER && start == 0) {
         		if (fonts[0] == focused_font)

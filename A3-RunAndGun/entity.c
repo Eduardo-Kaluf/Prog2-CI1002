@@ -18,6 +18,7 @@ struct entity *create_entity(int width, int height, int x, int y, int dx, int dy
     entity->foot = 0;
     entity->side = 0;
     entity->in_range = 0;
+    entity->health = 3;
 
     return entity;
 }

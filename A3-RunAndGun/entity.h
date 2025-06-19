@@ -21,6 +21,7 @@ struct entity {
 	int foot;
 	int side;
 	int in_range;
+	int health;
 	ALLEGRO_BITMAP* spritesheet;
 };
 
