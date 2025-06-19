@@ -13,6 +13,6 @@ void shots_update();
 
 // char shots_collide(char ship, int x, int y, int w, int h);
 
-void shots_draw(ALLEGRO_BITMAP* shot_sprite);
+void shots_draw(ALLEGRO_BITMAP* snowBall, ALLEGRO_BITMAP* spike);
 
 #endif

@@ -44,13 +44,19 @@ void update_position(struct player *player) {
 		move_player(player, 1, DOWN, DISP_W, DISP_H);
 }
 
-void update_enemy_position(struct entity *enemy, ALLEGRO_TIMER* timer) {
+void update_enemy_position(struct entity *enemy, int player_x, ALLEGRO_TIMER* timer) {
 	enum Directions trajectory = get_fox_direction(timer);
 
-	if (trajectory == LEFT)
-		enemy->x = enemy->x - PLAYER_STEP / 2;
-	else if (trajectory == RIGHT)
-		enemy->x = enemy->x + PLAYER_STEP / 2;
+	if (abs(enemy->x - player_x) <= 300)
+		enemy->in_range = 1;
+	else {
+		enemy->in_range = 0;
+
+		if (trajectory == LEFT)
+			enemy->x = enemy->x - PLAYER_STEP / 2;
+		else if (trajectory == RIGHT)
+			enemy->x = enemy->x + PLAYER_STEP / 2;
+	}
 }
 
 int main() {
@@ -70,6 +76,8 @@ int main() {
 	ALLEGRO_BITMAP* shot = al_load_bitmap("sprites/snowBall.png");
 	ALLEGRO_BITMAP* cupcake = al_load_bitmap("sprites/bunny.png");
 	ALLEGRO_BITMAP* fox = al_load_bitmap("sprites/fox.png");
+	ALLEGRO_BITMAP* spike = al_load_bitmap("sprites/spike.png");
+
 	ALLEGRO_FONT* fonts[3] = {focused_font, normal_font, title_font};
 
 	al_register_event_source(queue, al_get_keyboard_event_source());
@@ -83,8 +91,6 @@ int main() {
 	for (int i = 1; i < 7; i++)
 		enemies[i - 1] = create_entity(FOX_W, FOX_H, 500 * i, GROUND, X_VELOCITY, Y_VELOCITY, fox);
 	int player_sprite = 0;
-	int fox_sprite = 0;
-
 	al_start_timer(timer);
 	while (1) {
 		al_wait_for_event(queue, &event);
@@ -98,14 +104,14 @@ int main() {
 				update_position(player);
 
 				for (int i = 0; i < 6; i++)
-					update_enemy_position(enemies[i], timer);
+					update_enemy_position(enemies[i], player->entity->x, timer);
 
 				move_background(bg, player, enemies);
 
 				al_draw_tinted_scaled_rotated_bitmap_region(bg->spritesheet, bg->x, bg->y, bg->width, bg->height, al_map_rgba(255, 255, 255, 255),
 															0, 0, 0, 0, 1, 1, 0, 0);
 
-				shots_draw(shot);
+				shots_draw(shot, spike);
 
 				for (int i = 0; i < 6; i++)
 					al_draw_tinted_scaled_rotated_bitmap_region(enemies[i]->spritesheet, get_fox_sprite(player->entity, enemies[i], timer) * FOX_W, 0, FOX_W, FOX_H, al_map_rgba(255, 255, 255, 255),
@@ -124,7 +130,7 @@ int main() {
 				else if (enemies[i]->in_range) {
 					int x = enemies[i]->x + (enemies[i]->width / 2);
 					if (shots_add(NULL, enemies[i], enemies[i]->side, false, x, enemies[i]->y))
-						enemies[i]->shot_time = 10;
+						enemies[i]->shot_time = 30;
 				}
 			}
 

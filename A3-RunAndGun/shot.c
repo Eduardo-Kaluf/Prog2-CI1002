@@ -87,13 +87,12 @@ void shots_update() {
             }
         }
         else {
-            shots[i].x += shots[i].dx;
-            shots[i].y += shots[i].dy;
+            if (shots[i].side == LEFT)
+                shots[i].x += PLAYER_STEP + 2;
+            else if (shots[i].side == RIGHT)
+                shots[i].x -= PLAYER_STEP + 2;
 
-            if((shots[i].x <= 0)
-            || (shots[i].x >= DISP_W)
-            || (shots[i].y > BUFFER_H)
-            ) {
+            if (shots[i].x <= 0 || shots[i].x >= DISP_W) {
                 shots[i].used = false;
                 continue;
             }
@@ -137,12 +136,14 @@ void shots_update() {
 //     return false;
 // }
 
-void shots_draw(ALLEGRO_BITMAP* shot_sprite) {
+void shots_draw(ALLEGRO_BITMAP* snowBall, ALLEGRO_BITMAP* spike) {
     for(int i = 0; i < SHOTS_N; i++) {
         if(!shots[i].used)
             continue;
 
         if(shots[i].ship)
-            al_draw_bitmap(shot_sprite, shots[i].x, shots[i].y, 0);
+            al_draw_bitmap(snowBall, shots[i].x, shots[i].y, 0);
+        else
+            al_draw_bitmap(spike, shots[i].x, shots[i].y, 0);
     }
 }
