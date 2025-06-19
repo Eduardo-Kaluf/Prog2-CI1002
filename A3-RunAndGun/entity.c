@@ -39,9 +39,12 @@ void move_background(struct entity *bg, struct player *main_player, struct entit
     }
 }
 
+enum Directions get_fox_direction(ALLEGRO_TIMER *timer) {
+    return movement_1[((int) (al_get_timer_count(timer) % 240)) / 24];
+}
+
+
 int get_fox_sprite(struct entity *player, struct entity *fox, ALLEGRO_TIMER *timer) {
-
-
     if (fox->in_range) {
         if (fox->x <= player->x)
             fox->side = 1;
@@ -54,7 +57,7 @@ int get_fox_sprite(struct entity *player, struct entity *fox, ALLEGRO_TIMER *tim
         return 0;
     }
 
-    enum Directions fox_direction = movement_1[((int) (al_get_timer_count(timer) % 240)) / 24];
+    enum Directions fox_direction = get_fox_direction(timer);
 
     if ((int) al_get_timer_count(timer) % 12 == 0)
         fox->foot = !fox->foot;
@@ -72,7 +75,6 @@ int get_fox_sprite(struct entity *player, struct entity *fox, ALLEGRO_TIMER *tim
     if (fox_direction == NONE) {
         return 0;
     }
-
 
 }
 

@@ -28,6 +28,8 @@ struct entity *create_entity(int width, int height, int x, int y, int dx, int dy
 
 int get_fox_sprite(struct entity *player, struct entity *fox, ALLEGRO_TIMER *timer);
 
+enum Directions get_fox_direction(ALLEGRO_TIMER *timer);
+
 void move_background(struct entity *bg, struct player *main_player, struct entity **enemies);
 
 void destroy_entity(struct entity *element);
