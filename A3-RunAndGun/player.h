@@ -13,7 +13,6 @@ struct player {
     struct joystick *joystick;
     struct entity *entity;
     int jumping;
-    int shot_time;
 };
 
 struct player* create_player(int width, int height, int x, int y, int dx, int dy, ALLEGRO_BITMAP* spritesheet);
@@ -24,7 +23,7 @@ void jump(struct player *element);
 
 void crouch(struct player *element);
 
-int get_player_sprite(struct player *element, int *foot, int *side, ALLEGRO_TIMER *timer);
+int get_player_sprite(struct player *element, ALLEGRO_TIMER *timer);
 
 void destroy_player(struct player *element);
 

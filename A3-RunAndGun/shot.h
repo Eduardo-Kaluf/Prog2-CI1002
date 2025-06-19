@@ -7,7 +7,7 @@
 
 void shots_init();
 
-char shots_add(struct player *element, int side, char ship, int x, int y);
+char shots_add(struct player *element, struct entity *enemy, int side, char ship, int x, int y);
 
 void shots_update();
 

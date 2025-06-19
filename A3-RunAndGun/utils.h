@@ -11,6 +11,9 @@
 #define SPRITE_W 150
 #define SPRITE_H 180
 
+#define FOX_W 60
+#define FOX_H 35
+
 #define PLAYER_STEP 10
 #define X_VELOCITY 1
 #define Y_VELOCITY 1
@@ -19,7 +22,10 @@ enum Directions {
     LEFT,
     RIGHT,
     UP,
-    DOWN
+    DOWN,
+    NONE
   };
+
+extern enum Directions movement_1[10];
 
 #endif

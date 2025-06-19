@@ -36,6 +36,16 @@ void update_position(struct player *player) {
 		move_player(player, 1, DOWN, DISP_W, DISP_H);
 }
 
+void update_enemy_position(struct entity *enemy, enum Directions trajectory) {
+
+	if (trajectory == LEFT) {
+		enemy->x = enemy->x - PLAYER_STEP / 2;
+	}
+	else if (trajectory == RIGHT) {
+		enemy->x = enemy->x + PLAYER_STEP / 2;
+	}
+}
+
 int main() {
     al_init();
     al_init_primitives_addon();
@@ -60,12 +70,17 @@ int main() {
 
 	ALLEGRO_BITMAP* shot = al_load_bitmap("sprites/snowBall.png");
 	ALLEGRO_BITMAP* cupcake = al_load_bitmap("sprites/bunny.png");
+	ALLEGRO_BITMAP* fox = al_load_bitmap("sprites/fox.png");
 	struct player* player = create_player(SPRITE_W, SPRITE_H, 100, 300, X_VELOCITY, Y_VELOCITY, cupcake);
 
+	struct entity* enemies[6];
+	for (int i = 1; i < 7; i++) {
+		enemies[i - 1] = create_entity(FOX_W, FOX_H, 500 * i, GROUND, X_VELOCITY, Y_VELOCITY, fox);
+	}
+
 	al_start_timer(timer);
-	int side = 0;
-	int foot = 0;
-	int current_sprite = 0;
+	int player_sprite = 0;
+	int fox_sprite = 0;
 	ALLEGRO_FONT* fonts[2] = {focused_font, normal_font};
 	while(1) {
 		al_wait_for_event(queue, &event);
@@ -74,20 +89,35 @@ int main() {
 			if (start) {
 				jump(player);
 
-				shots_update(player);
+				shots_update();
 
 				update_position(player);
 
-				move_background(bg, player);
+				for (int i = 0; i < 6; i++) {
+					enum Directions fox_direction = movement_1[((int) (al_get_timer_count(timer) % 240)) / 24];
+					update_enemy_position(enemies[i], fox_direction);
+				}
 
-				current_sprite = get_player_sprite(player, &foot, &side, timer);
+				shots_draw(shot);
+
+				move_background(bg, player, enemies);
+
+				player_sprite = get_player_sprite(player, timer);
+
 
 				al_draw_tinted_scaled_rotated_bitmap_region(bg->spritesheet, bg->x, bg->y, bg->width, bg->height, al_map_rgba(255, 255, 255, 255),
 															0, 0, 0, 0, 1, 1, 0, 0);
 
-				al_draw_tinted_scaled_rotated_bitmap_region(player->entity->spritesheet, current_sprite * SPRITE_W, 0, SPRITE_W, SPRITE_H, al_map_rgba(255, 255, 255, 255),
-															SPRITE_W / 2, SPRITE_H / 2, player->entity->x, player->entity->y, 0.8, 0.8, 0, side * ALLEGRO_FLIP_HORIZONTAL);
+				al_draw_tinted_scaled_rotated_bitmap_region(player->entity->spritesheet, player_sprite * SPRITE_W, 0, SPRITE_W, SPRITE_H, al_map_rgba(255, 255, 255, 255),
+															SPRITE_W / 2, SPRITE_H / 2, player->entity->x, player->entity->y, 0.8, 0.8, 0, player->entity->side * ALLEGRO_FLIP_HORIZONTAL);
 
+				for (int i = 0; i < 6; i++) {
+					fox_sprite = get_fox_sprite(player->entity, enemies[i], timer);
+
+					al_draw_tinted_scaled_rotated_bitmap_region(enemies[i]->spritesheet, fox_sprite * FOX_W, 0, FOX_W, FOX_H, al_map_rgba(255, 255, 255, 255),
+						FOX_W / 2, FOX_H / 2, enemies[i]->x, enemies[i]->y, 2, 2, 0, enemies[i]->side * ALLEGRO_FLIP_HORIZONTAL);
+
+				}
 				shots_draw(shot);
 			}
 			else {
@@ -107,17 +137,30 @@ int main() {
 				ALLEGRO_ALIGN_CENTER, "SAIR");
 			}
 
+
+
+			for (int i = 0; i < 6; i++) {
+				if (enemies[i]->shot_time)
+					enemies[i]->shot_time--;
+				else if (enemies[i]->in_range) {
+					int x = enemies[i]->x + (enemies[i]->width / 2);
+					if (shots_add(NULL, enemies[i], enemies[i]->side, false, x, enemies[i]->y))
+						enemies[i]->shot_time = 10;
+				}
+			}
+
+
 			al_flip_display();
 		}
         else if (event.type == ALLEGRO_EVENT_KEY_DOWN || event.type == ALLEGRO_EVENT_KEY_UP) {
 
         	if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
-        		if (player->shot_time)
-        			player->shot_time--;
+        		if (player->entity->shot_time)
+        			player->entity->shot_time--;
         		if (event.keyboard.keycode == ALLEGRO_KEY_SPACE) {
         			int x = player->entity->x + (player->entity->width / 2);
-        			if (shots_add(player, side, true, x, player->entity->y))
-        				player->shot_time = 5;
+        			if (shots_add(player, NULL, player->entity->side, true, x, player->entity->y))
+        				player->entity->shot_time = 5;
         		}
         	}
 
@@ -162,11 +205,11 @@ int main() {
 			break;
 	}
 
+    // CONSERTAR DESTROY
     al_destroy_font(normal_font);
 	al_destroy_display(disp);
 	al_destroy_timer(timer);
 	al_destroy_event_queue(queue);
-    //CONMSERTAR DESTROY
     destroy_player(player);
 
     return 0;

@@ -22,30 +22,39 @@ void shots_init() {
         shots[i].used = 0;
 }
 
-char shots_add(struct player *element, int side, char ship, int x, int y) {
+char shots_add(struct player *element, struct entity *enemy, int side, char ship, int x, int y) {
     for (int i = 0; i < SHOTS_N; i++) {
         if (shots[i].used)
             continue;
 
         shots[i].ship = ship;
 
-        int offset = element->entity->width;
-
-        if (side == 1)
-            offset = 10;
-        if (element->joystick->up)
-            if (side == 1)
-                offset = 90;
-            else
-                offset = 100;
-
         if (ship) {
+            int offset = element->entity->width;
+
+            if (side == 1)
+                offset = 10;
+            if (element->joystick->up)
+                if (side == 1)
+                    offset = 90;
+                else
+                    offset = 100;
+
             shots[i].x = x - offset;
             shots[i].y = y - SHIP_SHOT_H / 2;
 
             if (element->joystick->up)
                 shots[i].side = UP;
             else if (side == 1)
+                shots[i].side = LEFT;
+            else
+                shots[i].side = RIGHT;
+        }
+        else if (enemy->in_range) {
+            shots[i].x = x;
+            shots[i].y = y;
+
+            if (side == 1)
                 shots[i].side = LEFT;
             else
                 shots[i].side = RIGHT;
@@ -74,6 +83,18 @@ void shots_update() {
 
             if (shots[i].y <= -DISP_H || shots[i].x <= 0 || shots[i].x >= DISP_W) {
                 shots[i].used = 0;
+                continue;
+            }
+        }
+        else {
+            shots[i].x += shots[i].dx;
+            shots[i].y += shots[i].dy;
+
+            if((shots[i].x <= 0)
+            || (shots[i].x >= DISP_W)
+            || (shots[i].y > BUFFER_H)
+            ) {
+                shots[i].used = false;
                 continue;
             }
         }

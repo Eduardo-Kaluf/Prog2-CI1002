@@ -6,13 +6,14 @@
 
 #include "utils.h"
 
+extern enum Directions movement_1[10] = {LEFT, LEFT, LEFT, LEFT, NONE, NONE, RIGHT, RIGHT, RIGHT, RIGHT};
+
 
 struct player* create_player(int width, int height, int x, int y, int dx, int dy, ALLEGRO_BITMAP* spritesheet) {
 
 	struct player *new_player = malloc(sizeof(struct player));
     new_player->entity = create_entity(width, height, x, y, dx, dy, spritesheet);
 	new_player->joystick = joystick_create();
-	new_player->shot_time = 0;
 
 	return new_player;
 }
@@ -47,18 +48,17 @@ void jump(struct player *element) {
     if (element->entity->y <= GROUND - 250) {
         element->entity->jumping = 0;
     }
-
 }
 
-int get_player_sprite(struct player *element, int *foot, int *side, ALLEGRO_TIMER *timer) {
+int get_player_sprite(struct player *element, ALLEGRO_TIMER *timer) {
 
 	if ((int) al_get_timer_count(timer) % 12 == 0)
-		*foot = !(*foot);
+		element->entity->foot = !element->entity->foot;
 
 	if (element->joystick->right)
-		*side = 0;
+		element->entity->side = 0;
 	else if (element->joystick->left)
-		*side = 1;
+		element->entity->side = 1;
 
 	if (element->entity->jumping)
 		return 3;
@@ -69,7 +69,7 @@ int get_player_sprite(struct player *element, int *foot, int *side, ALLEGRO_TIME
 	if (element->joystick->right && element->joystick->left)
 		return 0;
 	if (element->joystick->right || element->joystick->left)
-		return 1 + *foot;
+		return 1 + element->entity->foot;
 
 	return 0;
 }
