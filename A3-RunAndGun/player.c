@@ -9,10 +9,10 @@
 extern enum Directions movement_1[10] = {LEFT, LEFT, LEFT, LEFT, NONE, NONE, RIGHT, RIGHT, RIGHT, RIGHT};
 
 
-struct player* create_player(int width, int height, int x, int y, int dx, int dy, ALLEGRO_BITMAP* spritesheet) {
+struct player* create_player(int width, int height, int x, int y, int dx, int dy, ALLEGRO_BITMAP* spritesheet, int health) {
 
 	struct player *new_player = malloc(sizeof(struct player));
-    new_player->entity = create_entity(width, height, x, y, dx, dy, spritesheet);
+    new_player->entity = create_entity(width, height, x, y, dx, dy, spritesheet, health, 1);
 	new_player->joystick = joystick_create();
 
 	return new_player;
@@ -41,14 +41,6 @@ void move_player(struct player *element, int steps, enum Directions trajectory, 
 	}
 }
 
-
-
-void jump(struct player *element) {
-
-    if (element->entity->y <= GROUND - 250) {
-        element->entity->jumping = 0;
-    }
-}
 
 int get_player_sprite(struct player *element, ALLEGRO_TIMER *timer) {
 

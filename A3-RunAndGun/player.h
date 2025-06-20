@@ -15,11 +15,9 @@ struct player {
     int jumping;
 };
 
-struct player* create_player(int width, int height, int x, int y, int dx, int dy, ALLEGRO_BITMAP* spritesheet);
+struct player* create_player(int width, int height, int x, int y, int dx, int dy, ALLEGRO_BITMAP* spritesheet, int health);
 
 void move_player(struct player *element, int steps, enum Directions trajectory, int max_x, int max_y);
-
-void jump(struct player *element);
 
 void crouch(struct player *element);
 
