@@ -2,6 +2,7 @@
 #include "player.h"
 
 #include <allegro5/bitmap_draw.h>
+#include <allegro5/keycodes.h>
 
 #define SHIP_SHOT_W 22
 #define SHIP_SHOT_H 22
@@ -77,6 +78,24 @@ int collide(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int b
     return 1;
 }
 
+void handle_shots(struct entity *element, struct joystick *joystick, enum EntityType type, ALLEGRO_BITMAP* bullet_type) {
+    if (element->shot_time)
+        element->shot_time--;
+    else if ((type == BOSS && !element->especial) || (type == PLAYER && key == ALLEGRO_KEY_SPACE) || (type == FOX && element->in_range)) {
+        enum Directions direction;
+
+        if (type == PLAYER && joystick->up)
+            direction = UP;
+        else
+            direction = element->side;
+
+        if (shots_create(type, direction, bullet_type, element->x - element->width / 2, element->y))
+            element->shot_time = element->cooldown;
+    }
+}
+
+
+// REVISAR TODO TODO TODO
 char shots_collide(enum EntityType shooter, int x, int y, int w, int h) {
     for (int i = 0; i < SHOTS_N; i++) {
         if(!shots[i].used)
@@ -87,8 +106,8 @@ char shots_collide(enum EntityType shooter, int x, int y, int w, int h) {
 
         int sw, sh;
         if (shooter == PLAYER) {
-            sw = 35;
-            sh = 12;
+            sw = 35 / 2;
+            sh = 12 / 2;
         }
         else
         {
@@ -96,7 +115,7 @@ char shots_collide(enum EntityType shooter, int x, int y, int w, int h) {
             sh = SHIP_SHOT_H;
         }
 
-        if(collide(x, y, x+w, y+h, shots[i].x, shots[i].y, shots[i].x+sw, shots[i].y+sh))
+        if(collide(x, y, x+w, y+h, shots[i].x - sw, shots[i].y - sh, shots[i].x + sw, shots[i].y + sh))
         {
             shots[i].used = 0;
             return 1;

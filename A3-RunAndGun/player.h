@@ -23,6 +23,11 @@ void crouch(struct player *element);
 
 int get_player_sprite(struct player *element, ALLEGRO_TIMER *timer);
 
+void update_player_position(struct player *player);
+
+
+void update_player_status(struct player *player);
+
 void destroy_player(struct player *element);
 
 #endif

@@ -50,34 +50,31 @@ enum Directions get_fox_direction(ALLEGRO_TIMER *timer) {
 int get_fox_sprite(struct entity *player, struct entity *fox, ALLEGRO_TIMER *timer) {
     if (fox->in_range) {
         if (fox->x <= player->x)
-            fox->side = 1;
+            fox->side = RIGHT;
         else
-            fox->side = 0;
+            fox->side = LEFT;
 
-        if (fox->shot_time <= 5)
+        if (fox->shot_time <= 5) {
+            fox_offset_h = 15;
             return 1;
+        }
+
+        fox_offset_h = FOX_OFFSET_H;
 
         return 0;
     }
 
     enum Directions fox_direction = get_fox_direction(timer);
 
+    if (fox_direction == NONE)
+        return 0;
+
+    fox->side = fox_direction;
+
     if ((int) al_get_timer_count(timer) % 12 == 0)
         fox->foot = !fox->foot;
 
-    if (fox_direction == LEFT) {
-        fox->side = 0;
-        return 2 + fox->foot;
-    }
-
-    if (fox_direction == RIGHT) {
-        fox->side = 1;
-        return 2 + fox->foot;
-    }
-
-    if (fox_direction == NONE) {
-        return 0;
-    }
+    return 2 + fox->foot;
 }
 
 void destroy_entity(struct entity *element) {
