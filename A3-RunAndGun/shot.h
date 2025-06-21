@@ -4,6 +4,7 @@
 #include <allegro5/bitmap.h>
 
 #include "player.h"
+#include "utils.h"
 
 void shots_init();
 
@@ -15,7 +16,7 @@ int collide(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int b
 
 char shots_collide(enum EntityType shooter, int x, int y, int w, int h);
 
-void handle_shots(struct entity *element, struct joystick *joystick, enum EntityType type, ALLEGRO_BITMAP* bullet_type);
+void handle_shots(struct entity *element, struct player *player, enum EntityType type, ALLEGRO_BITMAP* bullet_type);
 
 void shots_draw();
 

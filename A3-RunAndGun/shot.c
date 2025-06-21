@@ -4,6 +4,8 @@
 #include <allegro5/bitmap_draw.h>
 #include <allegro5/keycodes.h>
 
+#include "utils.h"
+
 #define SHIP_SHOT_W 22
 #define SHIP_SHOT_H 22
 
@@ -78,13 +80,22 @@ int collide(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int b
     return 1;
 }
 
-void handle_shots(struct entity *element, struct joystick *joystick, enum EntityType type, ALLEGRO_BITMAP* bullet_type) {
+void handle_shots(struct entity *element, struct player *player, enum EntityType type, ALLEGRO_BITMAP* bullet_type) {
+
+    if (player != NULL) {
+        if (player->resting)
+            return;
+    }
+
     if (element->shot_time)
         element->shot_time--;
     else if ((type == BOSS && !element->especial) || (type == PLAYER && key == ALLEGRO_KEY_SPACE) || (type == FOX && element->in_range)) {
         enum Directions direction;
 
-        if (type == PLAYER && joystick->up)
+        if (type == PLAYER && player != NULL)
+            player->stamina -= PLAYER_STAMINA / PLAYER_STAMINA_FACTOR;
+
+        if (type == PLAYER && player != NULL && player->joystick->up)
             direction = UP;
         else
             direction = element->side;

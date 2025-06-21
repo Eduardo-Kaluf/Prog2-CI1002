@@ -6,16 +6,17 @@
 
 #include "entity.h"
 #include "joystick.h"
-#include "utils.h"
 
 
 struct player {
     struct joystick *joystick;
     struct entity *entity;
     int jumping;
+    int stamina;
+    int resting;
 };
 
-struct player* create_player(int width, int height, int x, int y, int dx, int dy, ALLEGRO_BITMAP* spritesheet, int health);
+struct player* create_player(int width, int height, int x, int y, int dx, int dy, ALLEGRO_BITMAP* spritesheet, int health, int stamina);
 
 void move_player(struct player *element, int steps, enum Directions trajectory, int max_x, int max_y);
 

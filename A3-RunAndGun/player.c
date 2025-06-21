@@ -10,11 +10,13 @@
 enum Directions movement_1[10] = {LEFT, LEFT, LEFT, LEFT, NONE, NONE, RIGHT, RIGHT, RIGHT, RIGHT};
 
 
-struct player* create_player(int width, int height, int x, int y, int dx, int dy, ALLEGRO_BITMAP* spritesheet, int health) {
+struct player* create_player(int width, int height, int x, int y, int dx, int dy, ALLEGRO_BITMAP* spritesheet, int health, int stamina) {
 
 	struct player *new_player = malloc(sizeof(struct player));
     new_player->entity = create_entity(width, height, x, y, dx, dy, spritesheet, health, 1);
 	new_player->joystick = joystick_create();
+	new_player->stamina = stamina;
+	new_player->resting = 0;
 
 	return new_player;
 }
@@ -94,6 +96,15 @@ void update_player_status(struct player *player) {
 
 	if (player->entity->y <= GROUND - 250)
 		player->entity->jumping = 0;
+
+	if (player->stamina == 0)
+		player->resting = 1;
+
+	if (player->resting)
+		player->stamina++;
+
+	if (player->stamina == PLAYER_STAMINA)
+		player->resting = 0;
 }
 
 
