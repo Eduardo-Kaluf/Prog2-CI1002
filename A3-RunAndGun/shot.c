@@ -94,8 +94,6 @@ void handle_shots(struct entity *element, struct joystick *joystick, enum Entity
     }
 }
 
-
-// REVISAR TODO TODO TODO
 char shots_collide(enum EntityType shooter, int x, int y, int w, int h) {
     for (int i = 0; i < SHOTS_N; i++) {
         if(!shots[i].used)

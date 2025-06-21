@@ -48,7 +48,7 @@ int main() {
 	ALLEGRO_BITMAP* cupcake = al_load_bitmap("sprites/bunny.png");
 	ALLEGRO_BITMAP* fox = al_load_bitmap("sprites/fox.png");
 	ALLEGRO_BITMAP* spike = al_load_bitmap("sprites/spike.png");
-	ALLEGRO_BITMAP* bear = al_load_bitmap("sprites/bossteste.png");
+	ALLEGRO_BITMAP* bear = al_load_bitmap("sprites/boss.png");
 	ALLEGRO_FONT* fonts[3] = {focused_font, normal_font, title_font};
 
 	al_register_event_source(queue, al_get_keyboard_event_source());
@@ -65,14 +65,15 @@ int main() {
 		enemies[i - 1] = create_entity(FOX_DISP_W, FOX_DISP_H, 750 * i, GROUND - FOX_DISP_H/2, X_VELOCITY, Y_VELOCITY, fox, 1, 50);
 
 	int boss_fight = 0;
+	int pause = 0;
 	al_start_timer(timer);
 	while (1) {
 		al_wait_for_event(queue, &event);
 
 		key = event.keyboard.keycode;
 
-		if (event.type == ALLEGRO_EVENT_TIMER) {
-			if (start) {
+		if (event.type == ALLEGRO_EVENT_TIMER ) {
+			if (start && !pause) {
 				update_boss_status(boss, enemies, &boss_fight, timer, snowball);
 
 				update_player_status(player);
@@ -122,12 +123,17 @@ int main() {
 					handle_shots(boss, NULL, BOSS, spike);
 			}
 			else {
-				if (player->entity->health <= 0)
-					display_game_over(fonts);
-				else if (boss->health <= 0)
-					display_won(fonts);
-				else
-					display_menu(fonts);
+				if (pause) {
+					al_draw_text(fonts[2], al_map_rgba(0,0,0, 255), DISP_CENTER_W, DISP_CENTER_H, ALLEGRO_ALIGN_CENTER, "PAUSED");
+				}
+				else {
+					if (player->entity->health <= 0)
+						display_game_over(fonts);
+					else if (boss->health <= 0)
+						display_won(fonts);
+					else
+						display_menu(fonts);
+				}
 			}
 
 			al_flip_display();
@@ -146,21 +152,29 @@ int main() {
 			if (key == ALLEGRO_KEY_D)
 				joystick_right(player->joystick);
 
-			if (key == ALLEGRO_KEY_SPACE)
-			    joystick_fire(player->joystick);
+			if (!pause) {
+				if (key == ALLEGRO_KEY_SPACE)
+					joystick_fire(player->joystick);
 
-			if (key == ALLEGRO_KEY_ENTER && (player->entity->health <= 0 || boss->health <= 0))
-				break;
-
-			if (key == ALLEGRO_KEY_ENTER && start == 0) {
-				if (fonts[0] == focused_font)
-					start = 1;
-				else
+				if (key == ALLEGRO_KEY_ENTER && (player->entity->health <= 0 || boss->health <= 0))
 					break;
+
+				if (key == ALLEGRO_KEY_ENTER && start == 0) {
+					if (fonts[0] == focused_font)
+						start = 1;
+					else
+						break;
+				}
 			}
 		}
 
 		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+
+			if (key == ALLEGRO_KEY_ESCAPE)
+				pause = !pause;
+
+			if (pause)
+				continue;
 
 			handle_shots(player->entity, player->joystick, PLAYER, snowball);
 
@@ -174,8 +188,6 @@ int main() {
 				player->entity->jumping = 1;
 		}
 
-		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
-			break;
 	}
 
     // CONSERTAR DESTROY
