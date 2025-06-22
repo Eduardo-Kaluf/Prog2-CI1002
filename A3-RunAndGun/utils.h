@@ -49,7 +49,7 @@
 #define BOSS_BODY_OFFSET_W 50 * BOSS_SCALE
 #define BOSS_GROUND_OFFSET 38 * BOSS_SCALE
 
-#define BG_W 7350
+#define BG_W 7300
 #define BG_H 720
 #define BG_SCALE 1
 #define BG_DISP_W BG_W * BG_SCALE
