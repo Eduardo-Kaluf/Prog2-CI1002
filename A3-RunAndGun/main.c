@@ -26,6 +26,8 @@ int boss_offset_w = BOSS_OFFSET_W;
 int boss_offset_h =	BOSS_OFFSET_H;
 int boss_ground_offset = BOSS_GROUND_OFFSET;
 
+struct entity *pickup_heart = NULL;
+
 int main() {
     must_init(al_init(), "Allegro");
 
@@ -67,6 +69,7 @@ int main() {
     struct player* player = create_player(PLAYER_DISP_W, PLAYER_DISP_H, 100, GROUND - PLAYER_DISP_H/2, X_VELOCITY, Y_VELOCITY, cupcake, 10, PLAYER_STAMINA);
     struct entity *boss = create_entity(BOSS_DISP_W, BOSS_DISP_H,  BG_DISP_W - 200, GROUND - BOSS_DISP_H/2, X_VELOCITY, Y_VELOCITY, bear, 15, 80);
 	boss->side = LEFT;
+	pickup_heart = create_entity(PICKUP_HEART_DISP_W, PICKUP_HEART_DISP_H,  BG_DISP_W / 2, 400, 0, 0, heart, 0, 0);
 
 	struct entity* enemies[6];
 	for (int i = 1; i < 7; i++)
@@ -108,6 +111,7 @@ int main() {
 				// DRAW EVERYONE ON SCREEN
 				al_draw_tinted_scaled_rotated_bitmap_region(bg->spritesheet, bg->x, bg->y, DISP_W, DISP_H, al_map_rgba(255, 255, 255, 255),
 															DISP_CENTER_W, DISP_CENTER_H, DISP_CENTER_W, DISP_CENTER_H, 1, 1, 0, 0);
+				al_draw_scaled_bitmap(heart, 0, 0, HEART_W, HEART_H, pickup_heart->x, pickup_heart->y, PICKUP_HEART_DISP_W, PICKUP_HEART_DISP_H, 0);
 				shots_draw(snowball, spike);
 				for (int i = 0; i < 6; i++)
 					al_draw_tinted_scaled_rotated_bitmap_region(enemies[i]->spritesheet, get_fox_sprite(player->entity, enemies[i], timer) * FOX_W, 0, FOX_W, FOX_H, al_map_rgba(255, 255, 255, 255),
@@ -195,6 +199,7 @@ int main() {
 	for (int i = 0; i < 6; i++)
 		destroy_entity(enemies[i]);
 	destroy_entity(boss);
+	destroy_entity(pickup_heart);
 	al_destroy_font(title_font);
 	al_destroy_font(normal_font);
 	al_destroy_font(focused_font);

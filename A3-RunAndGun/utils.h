@@ -60,6 +60,11 @@
 #define HEART_SCALE 0.2
 #define HEART_DISP_W HEART_W * HEART_SCALE
 #define HEART_DISP_H HEART_H * HEART_SCALE
+#define PICKUP_HEART_SCALE 0.4
+#define PICKUP_HEART_DISP_W HEART_W * PICKUP_HEART_SCALE
+#define PICKUP_HEART_DISP_H HEART_H * PICKUP_HEART_SCALE
+
+
 
 #define MENU_FONT_N 3
 #define OPTIONS_FONT_N 4
@@ -94,6 +99,7 @@ extern int player_offset_h;
 extern int boss_offset_w;
 extern int boss_offset_h;
 extern int boss_ground_offset;
+extern struct entity *pickup_heart;
 
 void must_init(bool test, const char *description);
 

@@ -49,8 +49,8 @@ void update_boss_status(struct entity *boss, struct entity **enemies, int *boss_
     if (boss->especial && boss->y + boss->height/2 >= GROUND) {
         boss->especial = 0;
 
-        for (int i = 1; i < between(4, 10); i++)
-            shots_create(BOSS, DOWN, bullet_type, boss->x - 10 * i * between(5, 10), 0);
+        for (int i = 1; i < between(6, 10); i++)
+            shots_create(BOSS, DOWN, bullet_type, boss->x - 15 * i * between(5, 10), 0);
     }
 
     if ((int) al_get_timer_count(timer) % 300 == 0) {

@@ -59,6 +59,10 @@ int get_player_sprite(struct player *element, ALLEGRO_TIMER *timer) {
 
 	if (element->entity->jumping)
 		return 3;
+	if (element->joystick->fire && element->joystick->down) {
+		player_offset_h = 150;
+		return 6;
+	}
 	if (element->joystick->fire)
 		return 5;
 	if (element->joystick->down) {
@@ -94,6 +98,12 @@ void update_player_status(struct player *player) {
 	if (shots_collide(PLAYER, actual_x_collision, offseted_y - offseted_height / 2, offseted_width - PLAYER_BODY_OFFSET_W * (4 * PLAYER_SCALE), offseted_height))
 		player->entity->health--;
 
+	if (collide(actual_x_collision, offseted_y - offseted_height / 2, (offseted_width - PLAYER_BODY_OFFSET_W * (4 * PLAYER_SCALE)) + actual_x_collision, offseted_height + offseted_y - offseted_height / 2,
+		pickup_heart->x - HEART_DISP_W/2, pickup_heart->y - HEART_DISP_H/2, pickup_heart->x + HEART_DISP_W/2, pickup_heart->y + HEART_DISP_H/2)) {
+		pickup_heart->x = OFFSCREEN_POSITION;
+		player->entity->health += 3;
+	}
+
 	if (player->entity->y <= GROUND - 250)
 		player->entity->jumping = 0;
 
@@ -126,9 +136,7 @@ void update_player_position(struct player *player) {
 
 
 void destroy_player(struct player *element) {
-
 	destroy_entity(element->entity);
 	destroy_joystick(element->joystick);
 	free(element);
-
 }

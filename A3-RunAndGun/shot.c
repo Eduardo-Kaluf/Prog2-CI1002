@@ -103,6 +103,8 @@ void handle_shots(struct entity *element, struct player *player, enum EntityType
 
         if (type == BOSS)
             offset = 150;
+        if (type == PLAYER && player != NULL && player->joystick->down)
+            offset = 50;
 
         if (shots_create(type, direction, bullet_type, element->x - element->width / 2, element->y + offset))
             element->shot_time = element->cooldown;
