@@ -82,58 +82,54 @@ int main() {
 		key = event.keyboard.keycode;
 
 		if (event.type == ALLEGRO_EVENT_TIMER) {
+			// IF THE GAME ACTUALLY STARTED
 			if (start && !pause) {
+				// UPDATE EVERY ENTITY STATUSES (IS JUMPING, ESPECIAL, ETC..)
 				update_boss_status(boss, enemies, &boss_fight, timer, snowball);
-
 				update_player_status(player);
-
 				for (int i = 0; i < 6; i++)
 					update_enemy_status(enemies[i], player->entity->x);
 
+				// UPDATE EVERY ENTITY POSITION
 				shots_update();
-
 				update_player_position(player);
-
 				for (int i = 0; i < 6; i++) {
 					if (!enemies[i]->in_range)
 						update_fox_position(enemies[i], get_fox_direction(timer));
 				}
-
 				if (boss_fight)
 					update_boss_position(boss);
+				move_background(bg, player, enemies, boss);
 
+				// SEE IF THE PLAYER WON OR LOST
 				if (end_game(player, boss, &start))
 					continue;
 
-				move_background(bg, player, enemies, boss);
-
+				// DRAW EVERYONE ON SCREEN
 				al_draw_tinted_scaled_rotated_bitmap_region(bg->spritesheet, bg->x, bg->y, DISP_W, DISP_H, al_map_rgba(255, 255, 255, 255),
 															DISP_CENTER_W, DISP_CENTER_H, DISP_CENTER_W, DISP_CENTER_H, 1, 1, 0, 0);
-
 				shots_draw(snowball, spike);
-
 				for (int i = 0; i < 6; i++)
 					al_draw_tinted_scaled_rotated_bitmap_region(enemies[i]->spritesheet, get_fox_sprite(player->entity, enemies[i], timer) * FOX_W, 0, FOX_W, FOX_H, al_map_rgba(255, 255, 255, 255),
 														        FOX_W / 2, FOX_H / 2, enemies[i]->x, enemies[i]->y, FOX_SCALE, FOX_SCALE, 0, enemies[i]->side * ALLEGRO_FLIP_HORIZONTAL);
-
 				al_draw_tinted_scaled_rotated_bitmap_region(player->entity->spritesheet, get_player_sprite(player, timer) * PLAYER_W, 0, PLAYER_W, PLAYER_H, al_map_rgba(255, 255, 255, 255),
 															PLAYER_W / 2, PLAYER_H / 2, player->entity->x, player->entity->y, PLAYER_SCALE, PLAYER_SCALE, 0, player->entity->side * ALLEGRO_FLIP_HORIZONTAL);
-
-				// NÃO REMOVER ESSA CHAMADA
 				int boss_sprite = get_boss_sprite(boss);
 				if (boss_fight)
 					al_draw_tinted_scaled_rotated_bitmap_region(boss->spritesheet, boss_sprite * BOSS_W, 0, BOSS_W, BOSS_H, al_map_rgba(255, 255, 255, 255),
 																BOSS_W / 2, BOSS_H / 2, boss->x, boss->y + boss_ground_offset, BOSS_SCALE, BOSS_SCALE, 0, ALLEGRO_FLIP_HORIZONTAL);
-
 				draw_hud(player, heart);
 
+				// CREATE SHOTS FOR THE NEXT FRAME
 				for (int i = 0; i < 6; i++)
 					handle_shots(enemies[i], NULL, FOX, spike);
 
 				if (boss_fight)
 					handle_shots(boss, NULL, BOSS, spike);
 			}
+			// IF THE GAME HAS NOT BEEN STARTED OR PAUSED
 			else {
+				// JUST DRAWS THE CORRECT SCREEN
 				if (pause)
 					al_draw_text(normal_font, al_map_rgba(0,0,0, 255), DISP_CENTER_W, DISP_CENTER_H, ALLEGRO_ALIGN_CENTER, "PAUSED");
 				else {
@@ -151,6 +147,7 @@ int main() {
 			al_flip_display();
 		}
 
+		// HANDLING MOVEMENT AND FIRE
 		if (event.type == ALLEGRO_EVENT_KEY_DOWN || event.type == ALLEGRO_EVENT_KEY_UP)
 			joystick_control(player, key);
 
@@ -189,7 +186,7 @@ int main() {
 		}
 	}
 
-
+	// DESTROYS EVERYTHING
 	al_destroy_display(disp);
 	al_destroy_timer(timer);
 	al_destroy_event_queue(queue);
