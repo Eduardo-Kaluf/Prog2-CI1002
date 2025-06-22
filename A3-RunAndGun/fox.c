@@ -6,12 +6,26 @@
 #include "utils.h"
 
 
-void update_fox_position(struct entity *enemy, enum Directions trajectory) {
-    if (trajectory == LEFT)
-        enemy->x = enemy->x - PLAYER_STEP / 2;
-    else if (trajectory == RIGHT)
-        enemy->x = enemy->x + PLAYER_STEP / 2;
+void update_fox_position(struct entity *enemy, enum Directions trajectory, struct entity *bg) {
+
+    if (enemy->health <= 0) {
+        enemy->x = OFFSCREEN_POSITION;
+        return;
+    }
+
+    if (trajectory == LEFT) {
+        if (bg->x >= 100)
+            enemy->x = enemy->x - PLAYER_STEP / 2;
+        if ((enemy->x - PLAYER_STEP / 2) - enemy->width/2 >= 0 && bg->x <= 100)
+            enemy->x = enemy->x - PLAYER_STEP / 2;
+    }
+    else if (trajectory == RIGHT) {
+        if ((enemy->x + PLAYER_STEP / 2) + enemy->width/2 <= BG_DISP_W)
+            enemy->x = enemy->x + PLAYER_STEP / 2;
+    }
+
 }
+
 
 
 void update_enemy_status(struct entity *enemy, int player_x) {
@@ -33,5 +47,7 @@ void update_enemy_status(struct entity *enemy, int player_x) {
 
     if (abs(enemy->x - player_x) <= 300)
         enemy->in_range = 1;
+    else
+        enemy->in_range = 0;
 }
 

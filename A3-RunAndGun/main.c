@@ -98,7 +98,7 @@ int main() {
 				update_player_position(player);
 				for (int i = 0; i < 6; i++) {
 					if (!enemies[i]->in_range)
-						update_fox_position(enemies[i], get_fox_direction(timer));
+						update_fox_position(enemies[i], get_fox_direction(timer), bg);
 				}
 				if (boss_fight)
 					update_boss_position(boss);
