@@ -2,6 +2,10 @@
 
 #include "joystick.h"
 
+#include <allegro5/keycodes.h>
+
+#include "player.h"
+
 
 struct joystick* joystick_create() {				
 	struct joystick *element = malloc (sizeof(struct joystick));
@@ -36,6 +40,24 @@ void joystick_fire(struct joystick *element) {
 	element->fire = element->fire ^ 1;
 }
 
-void joystick_destroy(struct joystick *element) {
+void destroy_joystick(struct joystick *element) {
 	free(element);
+}
+
+void joystick_control(struct player *player, int key) {
+	if (key == ALLEGRO_KEY_W)
+		joystick_up(player->joystick);
+
+	if (key == ALLEGRO_KEY_A)
+		joystick_left(player->joystick);
+
+	if (key == ALLEGRO_KEY_S)
+		joystick_down(player->joystick);
+
+	if (key == ALLEGRO_KEY_D)
+		joystick_right(player->joystick);
+
+	if (key == ALLEGRO_KEY_SPACE)
+		joystick_fire(player->joystick);
+
 }

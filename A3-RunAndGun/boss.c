@@ -1,7 +1,3 @@
-//
-// Created by eduardo-kaluf on 21/06/25.
-//
-
 #include "boss.h"
 
 #include "entity.h"

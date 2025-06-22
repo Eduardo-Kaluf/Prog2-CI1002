@@ -1,5 +1,6 @@
 #include "entity.h"
 #include "player.h"
+#include "shot.h"
 #include "utils.h"
 
 
@@ -32,6 +33,8 @@ void move_background(struct entity *bg, struct player *main_player, struct entit
                 enemies[i]->x -= 2*PLAYER_STEP;
             }
             boss->x -= 2*PLAYER_STEP;
+
+            shots_move_with_bg(-1);
         }
         if (main_player->entity->x - main_player->entity->width / 2 - PLAYER_STEP <= 0 && bg->x > PLAYER_STEP) {
             bg->x -= 2*PLAYER_STEP;
@@ -39,6 +42,7 @@ void move_background(struct entity *bg, struct player *main_player, struct entit
                 enemies[i]->x += 2*PLAYER_STEP;
             }
             boss->x += 2*PLAYER_STEP;
+            shots_move_with_bg(1);
         }
     }
 }
@@ -78,5 +82,6 @@ int get_fox_sprite(struct entity *player, struct entity *fox, ALLEGRO_TIMER *tim
 }
 
 void destroy_entity(struct entity *element) {
+    al_destroy_bitmap(element->spritesheet);
     free(element);
 }

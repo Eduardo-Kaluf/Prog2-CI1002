@@ -126,5 +126,9 @@ void update_player_position(struct player *player) {
 
 
 void destroy_player(struct player *element) {
+
+	destroy_entity(element->entity);
+	destroy_joystick(element->joystick);
 	free(element);
+
 }

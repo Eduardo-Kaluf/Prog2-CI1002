@@ -6,6 +6,7 @@
 #include "player.h"
 #include "utils.h"
 
+
 void shots_init();
 
 char shots_create(enum EntityType type, enum Directions side, ALLEGRO_BITMAP* bullet_type, int x, int y);
@@ -19,5 +20,7 @@ char shots_collide(enum EntityType shooter, int x, int y, int w, int h);
 void handle_shots(struct entity *element, struct player *player, enum EntityType type, ALLEGRO_BITMAP* bullet_type);
 
 void shots_draw();
+
+void shots_move_with_bg(int mult_factor);
 
 #endif

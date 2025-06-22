@@ -1,10 +1,8 @@
-
 #include "utils.h"
+#include "player.h"
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "player.h"
 
 
 void must_init(bool test, const char *description) {

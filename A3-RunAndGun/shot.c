@@ -91,6 +91,7 @@ void handle_shots(struct entity *element, struct player *player, enum EntityType
         element->shot_time--;
     else if ((type == BOSS && !element->especial) || (type == PLAYER && key == ALLEGRO_KEY_SPACE) || (type == FOX && element->in_range)) {
         enum Directions direction;
+        int offset = 0;
 
         if (type == PLAYER && player != NULL)
             player->stamina -= PLAYER_STAMINA / PLAYER_STAMINA_FACTOR;
@@ -100,7 +101,10 @@ void handle_shots(struct entity *element, struct player *player, enum EntityType
         else
             direction = element->side;
 
-        if (shots_create(type, direction, bullet_type, element->x - element->width / 2, element->y))
+        if (type == BOSS)
+            offset = 150;
+
+        if (shots_create(type, direction, bullet_type, element->x - element->width / 2, element->y + offset))
             element->shot_time = element->cooldown;
     }
 }
@@ -140,5 +144,16 @@ void shots_draw() {
             continue;
 
         al_draw_bitmap(shots[i].bullet_type, shots[i].x, shots[i].y, 0);
+    }
+}
+
+void shots_move_with_bg(int mult_factor) {
+    for (int i = 0; i < SHOTS_N; i++) {
+        if (!shots[i].used)
+            continue;
+
+        shots[i].x += 2*PLAYER_STEP * mult_factor;
+
+        shots[i].frame++;
     }
 }

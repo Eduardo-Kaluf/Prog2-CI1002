@@ -1,6 +1,9 @@
 #ifndef __UTILS__ 																											
 #define __UTILS__																											
 
+#include "entity.h"
+#include <stdbool.h>
+
 #define BUFFER_W 320
 #define BUFFER_H 240
 #define DISP_SCALE 3
@@ -8,7 +11,6 @@
 #define DISP_H (BUFFER_H * DISP_SCALE)
 #define DISP_CENTER_W (float) DISP_W / 2
 #define DISP_CENTER_H (float) DISP_H / 2
-
 
 #define GROUND (DISP_H - 92)
 
@@ -22,6 +24,9 @@
 #define PLAYER_BODY_OFFSET_W 30 * PLAYER_SCALE
 #define PLAYER_STAMINA 100
 #define PLAYER_STAMINA_FACTOR 5
+#define PLAYER_STEP 10
+#define X_VELOCITY 1
+#define Y_VELOCITY 1
 
 #define STAMINA_BAR_X 200
 #define STAMINA_BAR_Y 20
@@ -34,19 +39,14 @@
 #define FOX_OFFSET_W 20 * FOX_SCALE
 #define FOX_OFFSET_H 0 * FOX_SCALE
 
-
 #define BOSS_W 250
 #define BOSS_H 350
 #define BOSS_SCALE 1
 #define BOSS_DISP_W BOSS_W * BOSS_SCALE
 #define BOSS_DISP_H BOSS_H * BOSS_SCALE
-
-#define MENU_FONT_N 3
-
 #define BOSS_OFFSET_W 40 * BOSS_SCALE
 #define BOSS_OFFSET_H 180 * BOSS_SCALE
 #define BOSS_BODY_OFFSET_W 50 * BOSS_SCALE
-
 #define BOSS_GROUND_OFFSET 38 * BOSS_SCALE
 
 #define BG_W 7350
@@ -61,16 +61,10 @@
 #define HEART_DISP_W HEART_W * HEART_SCALE
 #define HEART_DISP_H HEART_H * HEART_SCALE
 
-
-#define PLAYER_STEP 10
-#define X_VELOCITY 1
-#define Y_VELOCITY 1
-
+#define MENU_FONT_N 3
 #define OPTIONS_FONT_N 4
 
-
 #define OFFSCREEN_POSITION -1000
-#include <stdbool.h>
 
 enum Directions {
     RIGHT,
@@ -88,10 +82,8 @@ enum EntityType {
 
 
 extern enum Directions movement_1[10];
-extern enum Directions movement_2[10];
 
 extern int key;
-
 
 extern int fox_offset_w;
 extern int fox_offset_h;
@@ -99,18 +91,14 @@ extern int fox_offset_h;
 extern int player_offset_w;
 extern int player_offset_h;
 
-
 extern int boss_offset_w;
 extern int boss_offset_h;
 extern int boss_ground_offset;
-
-
-#include "entity.h"
 
 void must_init(bool test, const char *description);
 
 int between(int lo, int hi);
 
-
 int end_game(struct player *player, struct entity *boss, int *start);
+
 #endif

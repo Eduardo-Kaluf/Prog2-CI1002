@@ -26,94 +26,51 @@ int boss_offset_w = BOSS_OFFSET_W;
 int boss_offset_h =	BOSS_OFFSET_H;
 int boss_ground_offset = BOSS_GROUND_OFFSET;
 
-enum Directions movement_2[10] = {NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE};
-
-void reset_fonts(ALLEGRO_FONT **menu_fonts, ALLEGRO_FONT *focus, ALLEGRO_FONT *normal, int n) {
-	for (int i = 0; i < n; i++)
-		menu_fonts[i] = normal;
-	menu_fonts[0] = focus;
-}
-
-int selected_font(ALLEGRO_FONT **menu_fonts, ALLEGRO_FONT *target, int n) {
-	for (int i = 0; i < n; i++) {
-		if (menu_fonts[i] == target) {
-			return i;
-		}
-	}
-
-	return 0;
-}
-
-void font_down(ALLEGRO_FONT **menu_fonts, ALLEGRO_FONT *focus, ALLEGRO_FONT *normal, int n) {
-	int k = selected_font(menu_fonts, focus, n);
-
-	if (k == n - 1) {
-		menu_fonts[k] = normal;
-		menu_fonts[0] = focus;
-		return;
-	}
-
-	menu_fonts[k] = normal;
-	menu_fonts[k + 1] = focus;
-}
-
-void font_up(ALLEGRO_FONT **menu_fonts, ALLEGRO_FONT *focus, ALLEGRO_FONT *normal, int n) {
-	int k = selected_font(menu_fonts, focus, n);
-
-	if (k == 0) {
-		menu_fonts[k] = normal;
-		menu_fonts[n - 1] = focus;
-		return;
-	}
-
-	menu_fonts[k] = normal;
-	menu_fonts[k - 1] = focus;
-}
-
-void display_options(ALLEGRO_FONT **options_fonts) {
-	al_clear_to_color(al_map_rgb(0, 0, 0));
-
-	al_draw_text(options_fonts[0], al_map_rgb(255,255,255), DISP_CENTER_W, DISP_CENTER_H - 200, ALLEGRO_ALIGN_CENTER, "FACIL");
-	al_draw_text(options_fonts[1], al_map_rgb(255,255,255), DISP_CENTER_W, DISP_CENTER_H - 100, ALLEGRO_ALIGN_CENTER, "MEDIO");
-	al_draw_text(options_fonts[2], al_map_rgb(255,255,255), DISP_CENTER_W, DISP_CENTER_H, ALLEGRO_ALIGN_CENTER, "DIFICIL");
-	al_draw_text(options_fonts[3], al_map_rgb(255,255,255), DISP_CENTER_W, DISP_CENTER_H + 100, ALLEGRO_ALIGN_CENTER, "VOLTAR");
-}
-
 int main() {
-    al_init();
-    al_init_primitives_addon();
-	al_init_image_addon();
-	al_install_keyboard();
-	al_init_ttf_addon();
+    must_init(al_init(), "Allegro");
+
+    must_init(al_init_primitives_addon(), "Primitives");
+	must_init(al_init_image_addon(), "Image");
+	must_init(al_install_keyboard(), "Keyboard");
+	must_init(al_init_ttf_addon(), "Ttf");
 
 	ALLEGRO_TIMER* timer = al_create_timer(1.0 / 60.0);
+	must_init(timer, "Timer");
+
 	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
-	ALLEGRO_FONT* normal_font = al_load_ttf_font("font.TTF", 32, 0);
-	ALLEGRO_FONT* focused_font = al_load_ttf_font("font.TTF", 48, 0);
+	must_init(queue, "Queue");
+
+    ALLEGRO_DISPLAY* disp = al_create_display(DISP_W, DISP_H);
+
 	ALLEGRO_FONT* title_font = al_load_ttf_font("font.TTF", 64, 0);
-	ALLEGRO_DISPLAY* disp = al_create_display(DISP_W, DISP_H);
-	ALLEGRO_EVENT event;
-	ALLEGRO_BITMAP* snowball = al_load_bitmap("sprites/snowBall.png");
-	ALLEGRO_BITMAP* cupcake = al_load_bitmap("sprites/bunny.png");
-	ALLEGRO_BITMAP* fox = al_load_bitmap("sprites/fox.png");
-	ALLEGRO_BITMAP* spike = al_load_bitmap("sprites/spike.png");
-	ALLEGRO_BITMAP* bear = al_load_bitmap("sprites/boss.png");
-	ALLEGRO_BITMAP* heart = al_load_bitmap("sprites/heart.png");
-	ALLEGRO_FONT* menu_fonts[MENU_FONT_N] = {focused_font, normal_font, normal_font};
-	ALLEGRO_FONT* options_fonts[OPTIONS_FONT_N] = {focused_font, normal_font, normal_font, normal_font};
+    ALLEGRO_FONT* normal_font = al_load_ttf_font("font.TTF", 32, 0);
+    ALLEGRO_FONT* focused_font = al_load_ttf_font("font.TTF", 48, 0);
+    ALLEGRO_FONT* menu_fonts[MENU_FONT_N] = {focused_font, normal_font, normal_font};
+    ALLEGRO_FONT* options_fonts[OPTIONS_FONT_N] = {focused_font, normal_font, normal_font, normal_font};
+
+    ALLEGRO_BITMAP* snowball = al_load_bitmap("sprites/snowBall.png");
+    ALLEGRO_BITMAP* spike = al_load_bitmap("sprites/spike.png");
+
+    ALLEGRO_BITMAP* cupcake = al_load_bitmap("sprites/bunny.png");
+    ALLEGRO_BITMAP* fox = al_load_bitmap("sprites/fox.png");
+    ALLEGRO_BITMAP* bear = al_load_bitmap("sprites/boss.png");
+
+    ALLEGRO_BITMAP* heart = al_load_bitmap("sprites/heart.png");
+
+    ALLEGRO_EVENT event;
 
 	al_register_event_source(queue, al_get_keyboard_event_source());
-	al_register_event_source(queue, al_get_display_event_source(disp));
+    al_register_event_source(queue, al_get_display_event_source(disp));
 	al_register_event_source(queue, al_get_timer_event_source(timer));
 
-	struct player* player = create_player(PLAYER_DISP_W, PLAYER_DISP_H, 100, GROUND - PLAYER_DISP_H/2, X_VELOCITY, Y_VELOCITY, cupcake, 5, PLAYER_STAMINA);
-	struct entity *bg = create_entity(BG_DISP_W, BG_DISP_H, 0, 0, 0, 0, al_load_bitmap("sprites/bg.png"), 0, 0);
-	struct entity *boss = create_entity(BOSS_DISP_W, BOSS_DISP_H,  BG_DISP_W - 200, GROUND - BOSS_DISP_H/2, X_VELOCITY, Y_VELOCITY, bear, 10, 80);
+    struct entity *bg = create_entity(BG_DISP_W, BG_DISP_H, 0, 0, 0, 0, al_load_bitmap("sprites/bg.png"), 0, 0);
+    struct player* player = create_player(PLAYER_DISP_W, PLAYER_DISP_H, 100, GROUND - PLAYER_DISP_H/2, X_VELOCITY, Y_VELOCITY, cupcake, 10, PLAYER_STAMINA);
+    struct entity *boss = create_entity(BOSS_DISP_W, BOSS_DISP_H,  BG_DISP_W - 200, GROUND - BOSS_DISP_H/2, X_VELOCITY, Y_VELOCITY, bear, 15, 80);
 	boss->side = LEFT;
 
 	struct entity* enemies[6];
 	for (int i = 1; i < 7; i++)
-		enemies[i - 1] = create_entity(FOX_DISP_W, FOX_DISP_H, 750 * i, GROUND - FOX_DISP_H/2, X_VELOCITY, Y_VELOCITY, fox, 1, 50);
+		enemies[i - 1] = create_entity(FOX_DISP_W, FOX_DISP_H, 750 * i, GROUND - FOX_DISP_H/2, X_VELOCITY, Y_VELOCITY, fox, 3, 50);
 
 	int boss_fight = 0;
 	int pause = 0;
@@ -194,112 +151,62 @@ int main() {
 			al_flip_display();
 		}
 
-		if (event.type == ALLEGRO_EVENT_KEY_DOWN || event.type == ALLEGRO_EVENT_KEY_UP) {
-			if (key == ALLEGRO_KEY_W)
-			    joystick_up(player->joystick);
-
-			if (key == ALLEGRO_KEY_A)
-				joystick_left(player->joystick);
-
-			if (key == ALLEGRO_KEY_S)
-			    joystick_down(player->joystick);
-
-			if (key == ALLEGRO_KEY_D)
-				joystick_right(player->joystick);
-
-			if (key == ALLEGRO_KEY_SPACE)
-				joystick_fire(player->joystick);
-
-			if (!pause) {
-				if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
-					if (key == ALLEGRO_KEY_ENTER && (player->entity->health <= 0 || boss->health <= 0))
-						break;
-
-					if (key == ALLEGRO_KEY_ENTER && start == 0 && !options) {
-						if (selected_font(menu_fonts, focused_font, MENU_FONT_N) == 0) {
-							start = 1;
-							continue;
-						}
-
-						if (selected_font(menu_fonts, focused_font, MENU_FONT_N) == 1) {
-							options = 1;
-							reset_fonts(menu_fonts, focused_font, normal_font, MENU_FONT_N);
-							continue;
-						}
-
-						if (selected_font(menu_fonts, focused_font, MENU_FONT_N) == 2)
-							break;
-					}
-
-					if (key == ALLEGRO_KEY_ENTER && start == 0 && options) {
-						int font_selected = selected_font(options_fonts, focused_font, OPTIONS_FONT_N);
-
-						switch (font_selected) {
-							case 0:
-								player->entity->health = 15;
-								for (int i = 0; i < 6; i++)
-									enemies[i]->health = 2;
-								boss->health = 10;
-								break;
-							case 1:
-								player->entity->health = 10;
-								for (int i = 0; i < 6; i++)
-									enemies[i]->health = 3;
-								boss->health = 15;
-								break;
-							case 2:
-								player->entity->health = 5;
-								for (int i = 0; i < 6; i++)
-									enemies[i]->health = 3;
-								boss->health = 20;
-								break;
-							default:
-								options = 0;
-								reset_fonts(options_fonts, focused_font, normal_font, OPTIONS_FONT_N);
-								break;
-						}
-					}
-				}
-			}
-		}
+		if (event.type == ALLEGRO_EVENT_KEY_DOWN || event.type == ALLEGRO_EVENT_KEY_UP)
+			joystick_control(player, key);
 
 		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
 
+			// HANDLING MENU OPTIONS
+			if (!pause && key == ALLEGRO_KEY_ENTER) {
+				if (player->entity->health <= 0 || boss->health <= 0)
+					break;
+
+				if (!start) {
+					if (!options) {
+						if (handle_menu_functions(&start, &options, menu_fonts, focused_font, normal_font))
+							continue;
+
+						break;
+					}
+
+					if (options)
+						handle_options_functions(&options, player, boss, enemies, options_fonts, focused_font, normal_font);
+				}
+			}
+
+			menu_movement(options, options_fonts, menu_fonts, focused_font, normal_font);
+
+			// HANDLE THINGS WHEN THE GAME HAS ACTUALLY STARTED
 			if (key == ALLEGRO_KEY_ESCAPE && !options && start)
 				pause = !pause;
 
-			if (pause)
-				continue;
+			if (start && !pause) {
+				handle_shots(player->entity, player, PLAYER, snowball);
 
-			handle_shots(player->entity, player, PLAYER, snowball);
-
-			if (!options) {
-				if (key == ALLEGRO_KEY_S)
-					font_down(menu_fonts, focused_font, normal_font, MENU_FONT_N);
-
-				if (key == ALLEGRO_KEY_W)
-					font_up(menu_fonts, focused_font, normal_font, MENU_FONT_N);
+				if (player->entity->height / 2 + player->entity->y == GROUND && key == ALLEGRO_KEY_W)
+					player->entity->jumping = 1;
 			}
-
-			if (options) {
-				if (key == ALLEGRO_KEY_S)
-					font_down(options_fonts, focused_font, normal_font, OPTIONS_FONT_N);
-
-				if (key == ALLEGRO_KEY_W)
-					font_up(options_fonts, focused_font, normal_font, OPTIONS_FONT_N);
-			}
-
-			if (player->entity->height / 2 + player->entity->y == GROUND && key == ALLEGRO_KEY_W)
-				player->entity->jumping = 1;
 		}
 	}
 
-    // CONSERTAR DESTROY
-    al_destroy_font(normal_font);
+
 	al_destroy_display(disp);
 	al_destroy_timer(timer);
 	al_destroy_event_queue(queue);
     destroy_player(player);
+	destroy_entity(bg);
+	for (int i = 0; i < 6; i++)
+		destroy_entity(enemies[i]);
+	destroy_entity(boss);
+	al_destroy_font(title_font);
+	al_destroy_font(normal_font);
+	al_destroy_font(focused_font);
+	al_destroy_bitmap(snowball);
+	al_destroy_bitmap(spike);
+	al_destroy_bitmap(cupcake);
+	al_destroy_bitmap(fox);
+	al_destroy_bitmap(bear);
+	al_destroy_bitmap(heart);
 
     return 0;
 }
