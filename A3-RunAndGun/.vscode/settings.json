@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "allegro_image.h": "c",
-        "allegro_font.h": "c",
-        "allegro5.h": "c",
-        "allegro_primitives.h": "c"
-    }
-}
